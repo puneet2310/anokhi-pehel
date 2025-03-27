@@ -20,7 +20,9 @@ const updateSettings = async (req, res) => {
     );
 
     if (!setting) {
-      return res.status(400).json({ error: "Setting not found" });
+      //create the new setting if not found (do for creating the isPromotingAllowed setting)
+      const newSetting = await Settings.create({ key, value });
+      return res.json({ success: true, message: "Setting created and updated successfully" });
     }
 
     res.json({ success: true, message: "Setting updated successfully" });
