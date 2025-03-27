@@ -33,7 +33,7 @@ const ViewLineGraph = () => {
     const fetchTestData = async () => {
       try {
         // console.log("sUBJECYT IS : ",subjectId)
-        const response = await axios.get(`${BASE_URL}/get-graph?studentId=${studentId}&subjectId=${subjectId}`);
+        const response = await axios.get(`${BASE_URL}/get-graph?studentId=${studentId}&subjectId=${subjectId}&classId=${classId}`);
         const sortedScores = response.data.data.sort((a, b) => new Date(a.date) - new Date(b.date));
         // console.log(sortedScores);
         setStudentScoresWithAbsences(sortedScores);
@@ -56,14 +56,17 @@ const ViewLineGraph = () => {
         const sortedAvgScore = response.data.data.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         const filteredAvgScores = sortedAvgScore.filter((score) => {
-          const date = new Date(score.date);
-          return !studentScoresWithAbsences.some((studentScore) =>
-            studentScore.date &&
-            new Date(studentScore.date).toISOString() === date.toISOString() &&
-            studentScore.score <= -1
+          const date = new Date(score.date).toISOString();
+        
+          // Check if the date is present in studentScoresWithAbsences
+          const matchingStudentScore = studentScoresWithAbsences.find(
+            (studentScore) => studentScore.date && new Date(studentScore.date).toISOString() === date
           );
+        
+          // Include only if the date is present in studentScoresWithAbsences and the student's score is not -1
+          return matchingStudentScore && matchingStudentScore.score > -1;
         });
-
+                
         setClassAverage(filteredAvgScores);
         filterData(studentScores, classAverage, selectedDuration);
       } catch (error) {

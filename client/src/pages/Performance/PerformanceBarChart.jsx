@@ -16,7 +16,7 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
   if (!barChartData || Object.keys(barChartData).length === 0) {
     return <p className="text-center text-gray-500">No data available</p>;
   }
-
+  //check whether data is present or no
   const groupedData = useMemo(() => {
     const tempGroupedData = {};
     Object.entries(barChartData).forEach(([subject, data]) => {
@@ -36,6 +36,7 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
     return tempGroupedData;
   }, [barChartData]);
 
+  if(Object.keys(groupedData).length === 0) return <p className="text-center text-gray-500">No Performance data available</p>;
 
   const labels = useMemo(() => {
     return Object.keys(groupedData)

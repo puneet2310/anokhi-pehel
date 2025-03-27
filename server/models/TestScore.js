@@ -50,6 +50,6 @@ const performanceSchema = new Schema(
   { timestamps: true }
 );
 
-performanceSchema.index({ student: 1, subject: 1 }, { unique: true });
+performanceSchema.index({ student: 1, subject: 1, className: 1 }, { unique: true });
 
 module.exports = mongoose.model("Test", performanceSchema);

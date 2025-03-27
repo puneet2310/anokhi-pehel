@@ -43,7 +43,7 @@ const Student = () => {
 
           try {
             const response = await axios.get(
-              `${BASE_URL}/get-graph?studentId=${studentId}&subjectId=${subjectKey}`
+              `${BASE_URL}/get-graph?studentId=${studentId}&subjectId=${subjectKey}&classId=${student.className}`
             );
 
             // console.log("API Response:", response.data);
@@ -78,7 +78,7 @@ const Student = () => {
       }
     };
 
-    fetchBarChartData();
+    if(student.className)fetchBarChartData();
     // console.log(barChartData);
   }, [student, subjects]);
 

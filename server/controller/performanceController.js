@@ -79,7 +79,7 @@ const submitScore = async(req, res) => {
 
         for (const score of parsedScores) {
             const { studentId, score: studentScore } = score;
-            let testRecord = await Test.findOne({ student: studentId, subject });
+            let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
 
             if (testRecord) {
             testRecord.tests.push({ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date });
@@ -100,7 +100,6 @@ const submitScore = async(req, res) => {
         return res.status(200).json({ message: "Scores submitted successfully !!" });
     } 
     catch (error) {
-      if(req.file.path) fs.unlinkSync(req.file.path);
       console.error("Error:", error);
       return res.status(500).json({ error: error.message || "Internal Server Error" });
     }
@@ -110,21 +109,28 @@ const submitScore = async(req, res) => {
 const testData = async (req, res) => {
   try {
     const { selectedClass, subject } = req.query;
-
-    // Fetch a single document
-    const testRecord = await Test.findOne({ className: selectedClass, subject: subject })
+    // Fetch all students because may be some student get promoted to next class and in the prev class remainig students have the test
+    const testRecord = await Test.find({ className: selectedClass, subject: subject })
       .select("tests")
       .lean();
 
-    if (!testRecord || !testRecord.tests) {
+    if (!testRecord || !testRecord.length === 0) {
       return res.status(404).json({ message: "No tests found for the given class and subject" });
     }
 
-    // Correctly map the tests array inside the document
-    const testDates = testRecord.tests.map((t) => ({
-      date: t.date,
-      id: t._id,
-    }));
+    const testDates = [];
+    const dateSet = new Set(); // To store unique dates
+
+    testRecord.forEach(record => {
+      record.tests.forEach(test => {
+        const testDateStr = new Date(test.date).toISOString(); // Convert to a standard format
+
+        if (!dateSet.has(testDateStr)) {
+          dateSet.add(testDateStr);
+          testDates.push({ date: test.date, id: test._id });
+        }
+      });
+    });
 
     // console.log("Test Dates:", testDates);
 
@@ -136,7 +142,7 @@ const testData = async (req, res) => {
 }
 
 const graphData = async (req, res) => {
-  let { studentId, subjectId } = req.query;
+  let { studentId, subjectId, classId } = req.query;
 
   // console.log("Received Query:", { studentId, subjectId });
 
@@ -147,7 +153,8 @@ const graphData = async (req, res) => {
   try {
     const performance = await Test.findOne({
       student: new mongoose.Types.ObjectId(studentId),
-      subject: subjectId
+      subject: subjectId,
+      className: classId
     })
       .select("tests")
       .lean();
@@ -174,26 +181,15 @@ const graphData = async (req, res) => {
 
 const averageData = async(req, res) => {
   const { classId, subjectId } = req.query;
-  // console.log(classId, subjectId);
 
-  const classData = await Student.find({ className: classId })
-  // console.log("classData", classData)
+  const classData = await Test.find({ className: classId , subject: subjectId });
   if (!classData) {
     return res.status(404).json({ success: false, message: "Class not found" });
   }
 
-  const studentIds = classData.map(student => student._id);
-
-  const performances = await Test.find({
-    student: { $in: studentIds },
-    subject: subjectId,
-  });
-
-  // console.log("performances: ", performances)
-
   const performanceByDate = {};
 
-  performances.forEach((entry) => {
+  classData.forEach((entry) => {
       entry.tests.forEach((test) => {
           if (!test.date || typeof test.score !== "number") {
               console.warn("Skipping test with invalid data:", test);
