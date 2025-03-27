@@ -56,7 +56,6 @@ import ParticipantProfile from "./pages/Dashboard/ParticipantProfile";
 import Issue from "./pages/Dashboard/Issue";
 import JoinAsMentor from "./pages/Home/JoinAsMentor";
 import Winners from "./pages/Dashboard/Winners";
-import ViewLineGraph from "./pages/Performance/ViewLineGraph";
 import PromoteStudents from "./pages/Dashboard/PromoteStudents";
 
 const App = () => {
