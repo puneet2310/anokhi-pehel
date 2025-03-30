@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const ViewTestScore = () => {
+const StudentsScoreTabular = () => {
   const searchParams = new URLSearchParams(useLocation().search);
   const testId = searchParams.get("testId");
 
@@ -167,4 +167,4 @@ const ViewTestScore = () => {
   );
 };
 
-export default ViewTestScore;
+export default StudentsScoreTabular;

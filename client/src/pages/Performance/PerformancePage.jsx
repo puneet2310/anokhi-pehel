@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { classes, subjects } from "../../constants/Dashboard";
 import { BASE_URL } from "../../Service/helper";
 
-const AddStudent = () => {
+const PerformancePage = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     selectedClass: "",
@@ -295,5 +295,5 @@ const AddStudent = () => {
   );
 };
 
-export default AddStudent;
+export default PerformancePage;
 

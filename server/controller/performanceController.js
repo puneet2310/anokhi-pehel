@@ -114,7 +114,7 @@ const testData = async (req, res) => {
       .select("tests")
       .lean();
 
-    if (!testRecord || !testRecord.length === 0) {
+    if (!testRecord || testRecord.length === 0) {
       return res.status(404).json({ message: "No tests found for the given class and subject" });
     }
 

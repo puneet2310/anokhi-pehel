@@ -4,7 +4,7 @@ import axios from "axios";
 import { BASE_URL } from "../../Service/helper";
 import PerformanceLineChart from "./PerformanceLineChart";
 
-const ViewLineGraph = () => {
+const StudentScoresPictorially = () => {
   const queryParams = new URLSearchParams(location.search);
   const studentId = queryParams.get("studentId");
   const subjectId = queryParams.get("subjectId");
@@ -211,4 +211,4 @@ const ViewLineGraph = () => {
   );
 };
 
-export default ViewLineGraph;
+export default StudentScoresPictorially;
