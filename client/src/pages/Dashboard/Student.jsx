@@ -267,6 +267,18 @@ const Student = () => {
                   <span className="ml-1">Add Student</span>
                 </button>
 
+                {/* Add the button for promoting the students */}
+                <button
+                  onClick={() => {
+                    navigate("/PromotingStudents");
+                  }}
+                  type="button"
+                  className="flex items-center justify-center text-gray-100 bg-cyan-400 hover:bg-cyan-500 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none"
+                >
+
+                  <span className="ml-1">Promote Students</span>
+                </button>
+
                 {/* Actions */}
                 <button
                   onClick={toggleActionsDropdown}

@@ -57,6 +57,7 @@ import Issue from "./pages/Dashboard/Issue";
 import JoinAsMentor from "./pages/Home/JoinAsMentor";
 import Winners from "./pages/Dashboard/Winners";
 import StudentScoresPictorially from "./pages/Performance/StudentScoresPictorially";
+import PromoteStudents from "./pages/Dashboard/PromoteStudents";
 const App = () => {
   const { loading } = useSelector((state) => state.alerts);
 
@@ -193,6 +194,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Admission />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PromotingStudents"
+              element={
+                <ProtectedRoute>
+                  <PromoteStudents />
                 </ProtectedRoute>
               }
             />
