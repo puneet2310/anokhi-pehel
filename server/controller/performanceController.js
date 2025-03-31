@@ -3,108 +3,122 @@ const Student = require("../models/Student");
 const Test = require("../models/TestScore"); 
 const {authorize, uploadFile} = require('../utils/googleConfig.js')
 const fs = require("fs");
+const { deleteFile } = require("../utils/fileUtils.js");
 
-const submitScore = async(req, res) => {
-    try {
-        const { classId, subject, date, scores, mentorId, totalMarks } = req.body;
-        // console.log(req.body);
+const submitScore = async (req, res) => {
+  let uploadedFilePath = req?.file?.path;
+  try {
+      const { classId, subject, date, scores, mentorId, totalMarks } = req.body;
+      if (!classId) {
+          deleteFile(uploadedFilePath);
+          return res.status(401).json({ error: "classId is required" });
+      }
+      if (!subject) {
+          deleteFile(uploadedFilePath);
+          return res.status(401).json({ error: "subject is required" });
+      }
+      if (!date) {
+          deleteFile(uploadedFilePath);
+          return res.status(401).json({ error: "date is required" });
+      }
+      if (!scores) {
+          deleteFile();
+          return res.status(401).json({ error: "scores is required" });
+      }
+      if (!mentorId) {
+          deleteFile(uploadedFilePath);
+          return res.status(401).json({ error: "mentorId is required" });
+      }
+      if (!req.file) {
+          return res.status(401).json({ error: "file is required" });
+      }
 
-        if (!classId) return res.status(401).json({ error: "classId is required" });
-        if (!subject) return res.status(401).json({ error: "subject is required" });
-        if (!date) return res.status(401).json({ error: "date is required" });
-        if (!scores) return res.status(401).json({ error: "scores is required" });
-        if (!mentorId) return res.status(401).json({ error: "mentorId is required" });
-        if (!req.file) return res.status(401).json({ error: "file is required" });
+      let parsedScores;
+      try {
+          parsedScores = JSON.parse(scores);
+      } catch (error) {
+          console.error("Error parsing scores:", error);
+          deleteFile(uploadedFilePath);
+          return res.status(400).json({ error: "Invalid scores format" });
+      }
 
-        let parsedScores;
-        try {
-            parsedScores = JSON.parse(scores); // Convert string to array
-        } catch (error) {
-            console.error("Error parsing scores:", error);
-            return res.status(400).json({ error: "Invalid scores format" });
-        }
+      if (!Array.isArray(parsedScores) || parsedScores.length === 0) {
+          deleteFile(uploadedFilePath);
+          return res.status(400).json({ error: "Scores array must not be empty" });
+      }
 
-        if (!Array.isArray(parsedScores) || parsedScores.length === 0) {
-            return res.status(400).json({ error: "Scores array must not be empty" });
-        }
+      for (const score of parsedScores) {
+          if (!score.studentId || typeof score.score !== "number") {
+              deleteFile(uploadedFilePath);
+              return res.status(403).json({ error: "Invalid score data" });
+          }
+      }
 
-        for (const score of parsedScores) {
-            if (!score.studentId || typeof score.score !== "number") {
-            return res.status(403).json({ error: "Invalid score data" });
-            }
-        }
-        
-        // **CHECK IF DATA ALREADY EXISTS BEFORE FILE UPLOAD**
-        for (const score of parsedScores) {
-          // console.log(score);
-            const { studentId } = score;
+      // **CHECK IF DATA ALREADY EXISTS BEFORE FILE UPLOAD**
+      for (const score of parsedScores) {
+          const { studentId } = score;
 
-            let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
-            // console.log(testRecord);
-            if (testRecord) {
-            const existingTest = testRecord.tests.find(
-                (test) => new Date(test.date).toISOString().split("T")[0] === new Date(date).toISOString().split("T")[0]
-            );
+          let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
 
-            if (existingTest) {
-                fs.unlinkSync(req.file.path);
-                return res.status(409).json({
-                message: `Data already exists for current date and subject`,
-                });
-            }
-            }
-        }
+          if (testRecord) {
+              const existingTest = testRecord.tests.find(
+                  (test) => new Date(test.date).toISOString().split("T")[0] === new Date(date).toISOString().split("T")[0]
+              );
 
+              if (existingTest) {
+                  deleteFile(uploadedFilePath);
+                  return res.status(409).json({
+                      message: `Data already exists for current date and subject`,
+                  });
+              }
+          }
+      }
 
-        let fileId = null;
-        if (req.file) {
-            // console.log("Uploaded file:", req.file);
+      let fileId = null;
+      if (req.file) {
+          if (
+              req.file.mimetype !== "application/pdf" &&
+              req.file.mimetype !== "application/msword" &&
+              req.file.mimetype !==
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ) {
+              deleteFile(uploadedFilePath);
+              return res.status(400).json({ error: "Only PDF or Word files are allowed!" });
+          }
+          const authClient = await authorize();
+          const uploadedFileUrl = await uploadFile(authClient, req.file, classId, subject, date);
+          fileId = uploadedFileUrl;
+      }
 
-            if (
-            req.file.mimetype !== "application/pdf" &&
-            req.file.mimetype !== "application/msword" &&
-            req.file.mimetype !==
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            ) {
-            fs.unlinkSync(req.file.path); // Delete invalid file
-            return res.status(400).json({ error: "Only PDF or Word files are allowed!" });
-            }
+      for (const score of parsedScores) {
+          const { studentId, score: studentScore } = score;
+          let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
 
-            const authClient = await authorize();
-            const uploadedFileUrl = await uploadFile(authClient, req.file, classId, subject, date);
-            // console.log("File uploaded to Google Drive with ID:", uploadedFileUrl);
-            fileId = uploadedFileUrl;
-        }
+          if (testRecord) { 
+              testRecord.tests.push({ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date });
+              await testRecord.save();
+          } else {
+              const newTest = new Test({
+                  student: studentId,
+                  className: classId,
+                  subject,
+                  tests: [{ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date }],
+              });
+              await newTest.save();
+          }
+      }
 
-
-        for (const score of parsedScores) {
-            const { studentId, score: studentScore } = score;
-            let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
-
-            if (testRecord) {
-            testRecord.tests.push({ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date });
-
-            await testRecord.save();
-            } else {
-            const newTest = new Test({
-                student: studentId,
-                className: classId,
-                subject,
-                tests: [{ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date }],
-            });
-
-            await newTest.save();
-            }
-        }
-
-        return res.status(200).json({ message: "Scores submitted successfully !!" });
-    } 
-    catch (error) {
+      return res.status(200).json({ message: "Scores submitted successfully !!" });
+  } 
+  catch (error) {
       console.error("Error:", error);
       return res.status(500).json({ error: error.message || "Internal Server Error" });
-    }
-  
-}
+  } 
+  finally {
+      deleteFile(uploadedFilePath); // Ensure file is deleted no matter what
+  }
+};
+
 
 const testData = async (req, res) => {
   try {

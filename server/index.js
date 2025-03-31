@@ -8,6 +8,7 @@ dotenv.config();
 const PORT = process.env.PORT;
 const mongoDB = require("./config/db");
 const router = require("./routers");
+const { ensurePapersFolder } = require("./utils/fileUtils");
 mongoDB();
 
 app.use(cors());
@@ -31,6 +32,10 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   next();
 });
+
+// Ensure papers folder exists before paper uploads
+ensurePapersFolder(); 
+
 app.use(express.json());
 app.use("/images", express.static("images"));
 app.use("/antyodayaImages",express.static("antyodayaImages"));
