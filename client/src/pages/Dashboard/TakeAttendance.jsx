@@ -221,9 +221,10 @@ const Attendance = () => {
                   <th className="border-gray-900 p-2 text-gray-900">Student Name</th>
                   <th className="border-gray-900 p-2 text-gray-900">
                     <div className="flex flex-col">
-                      <span className="text-center">Last 5 Days </span>
+
                       {/* Date headers */}
-                      <div className="flex justify-between mt-2 gap-1 md:gap-1">
+                      <span className="text-center">Last 5 Days </span>
+                      <div className="flex justify-between mt-2 gap-3 md:gap-2">
                         {lastFiveDays.map((dateStr, index) => (
                           <div key={`date-${index}`} className="w-5 md:w-5 text-center text-xs">
                             {dateStr}
@@ -254,7 +255,7 @@ const Attendance = () => {
                         type="checkbox"
                         checked={presentStatus[student._id] || false}
                         onChange={() => togglePresentStatus(student._id)}
-                        className="h-6 w-6 rounded border-2 border-black text-indigo-600 focus:ring-indigo-600"
+                        className="h-6 mb-7 w-6 rounded border-2 border-black text-indigo-600 focus:ring-indigo-600"
                       />
                     </td>
                   </tr>
