@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
 const moment = require("moment");
-const { monthlyAttendance } = require("../controller/attendanceController");
+const { monthlyAttendance, lastFiveDaysAttendance } = require("../controller/attendanceController");
 
 router.post("/submitAttendance", async (req, res) => {
   try {
@@ -96,7 +96,7 @@ router.get("/attendance", async (req, res) => {
           (item) => item.status === "present"
         ).length; // Count present students
       });
-     
+
       res.status(200).json({
         totalStudents,
         totalPresentStudents,
@@ -166,6 +166,8 @@ router.get("/totalAttendance", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.get("/lastFiveDaysAttendance", lastFiveDaysAttendance); //Route to get last five days attendance for any class
 
 router.get("/monthTotalAttendance", monthlyAttendance); //Route to get monthly attendance for any class for a particular month
 
