@@ -71,7 +71,7 @@ const PromoteStudents = () => {
           studentId: student._id,
           studentName: student.name,
           newClass: student.className === "Nursery" ? "1" : student.className === "Navodaya" ? "6" : student.className === "12" ? "Select a class" : (parseInt(student.className) + 1).toString(), // Convert number to string
-          notPromoted: student.active ? false : true,
+          notPromoted: true,
           activeStatus: student.active 
         }));
         setPromoteDataList(initialPromoteData);
@@ -200,7 +200,7 @@ const PromoteStudents = () => {
       setPromoteDataList((prev) => 
         prev.map((data) => 
           data.studentId === studentId
-            ? { ...data, notPromoted: !newStatus }
+            ? { ...data, notPromoted: true }
             : data
       ));
     } catch (error) {
