@@ -31,9 +31,16 @@ const AddAntyodayaParticipant = () => {
       try {
         const pocResponse = await axios.get(`${BASE_URL}/pocList`);
         const eventResponse = await axios.get(`${BASE_URL}/getEvents`);
-        setPocList(pocResponse.data);
-        console.log(pocResponse);
-        setEventList(eventResponse.data);
+        const currentYear = new Date().getFullYear();
+
+        // Filter POCs by current year
+        const currentYearPocs = pocResponse.data.filter(poc => poc.year === currentYear);
+        const currentYearEvents = eventResponse.data.filter(event => event.year === currentYear);
+        setPocList(currentYearPocs);
+        setEventList(currentYearEvents);
+
+        console.log("POCs (current year only):", currentYearPocs);
+        console.log("Events (current year only):", currentYearEvents);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -369,39 +376,39 @@ const AddAntyodayaParticipant = () => {
                   </label>
 
                   <div className="mt-2 flex flex-col gap-2">
-  {Object.entries(
-    eventList.reduce((acc, event) => {
-      // Group events by eventGroup
-      if (!acc[event.eventGroup]) {
-        acc[event.eventGroup] = [];
-      }
-      acc[event.eventGroup].push(event);
-      return acc;
-    }, {})
-  ).map(([group, events]) => (
-    <div key={group} className="mb-4">
-      <h3 className="text-lg font-bold text-gray-900">Event-{group}</h3>
-      <div className="flex flex-col gap-2 mt-2">
-        {events
-          .sort((a, b) => a.eventName.localeCompare(b.eventName))
-          .map((event) => {
-            return (
-              <div key={event._id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  value={event._id}
-                  onChange={() => handleEventChange(event, group)}
-                  checked={credentials.events.includes(event._id)}
-                  className="mr-2"
-                />
-                <label className="text-sm text-gray-900">{event.eventName}</label>
-              </div>
-            );
-          })}
-      </div>
-    </div>
-  ))}
-</div>
+                    {Object.entries(
+                      eventList.reduce((acc, event) => {
+                        // Group events by eventGroup
+                        if (!acc[event.eventGroup]) {
+                          acc[event.eventGroup] = [];
+                        }
+                        acc[event.eventGroup].push(event);
+                        return acc;
+                      }, {})
+                    ).map(([group, events]) => (
+                      <div key={group} className="mb-4">
+                        <h3 className="text-lg font-bold text-gray-900">Event-{group}</h3>
+                        <div className="flex flex-col gap-2 mt-2">
+                          {events
+                            .sort((a, b) => a.eventName.localeCompare(b.eventName))
+                            .map((event) => {
+                              return (
+                                <div key={event._id} className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    value={event._id}
+                                    onChange={() => handleEventChange(event, group)}
+                                    checked={credentials.events.includes(event._id)}
+                                    className="mr-2"
+                                  />
+                                  <label className="text-sm text-gray-900">{event.eventName}</label>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
                 </div>
 

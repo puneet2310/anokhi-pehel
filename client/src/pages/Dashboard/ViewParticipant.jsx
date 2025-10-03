@@ -32,6 +32,9 @@ const Participants = () => {
     useState(false);
   const [isFilterByLocationDropdownOpen, setFilterByLOcationDropdownOpen] =
     useState(false);
+  const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
+    useState(false);
+  const [selectedSession, setSelectedSession] = useState([]); // State to hold selected session
   const initialUsers = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
@@ -52,6 +55,8 @@ const Participants = () => {
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
     if (isFilterByLocationDropdownOpen)
       setFilterByLOcationDropdownOpen(!isFilterByLocationDropdownOpen);
+    if (isFilterBySessionDropdownOpen)
+      setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
   };
 
   //filter by location
@@ -62,6 +67,12 @@ const Participants = () => {
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
   };
 
+  const toggleFilterBySessionDropdown = () => {
+    setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
+    if (isFilterByClassDropdownOpen)
+      setFilterByClassDropdownOpen(!isFilterByClassDropdownOpen);
+    if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
+  };
   const [students, setStudents] = useState([]);
   const [filterName, setFilterName] = useState("");
   const [filterSchool, setFilterSchool] = useState(""); 
@@ -103,6 +114,17 @@ const Participants = () => {
     }
   };
 
+  const handleSessionBoxChange = (e) => {
+    const { value, checked } = e.target;
+    const year = Number(value);
+
+    if (checked) {
+      setSelectedSession((prev) => [...prev, year]);
+    } else {
+      setSelectedSession((prev) => prev.filter((y) => y !== year));
+    }
+  };
+
   // State to hold selected locations
   const [selectedLocations, setSelectedLocations] = useState([]);
 
@@ -139,7 +161,13 @@ if (selectedLocations.length > 0) {
 
 if (selectedClasses.length > 0) {
   filteredStudents = filteredStudents.filter((student) =>
-    selectedClasses.includes(student.className)
+    selectedClasses.includes(student.class)
+  );
+}
+
+if(selectedSession.length > 0){
+  filteredStudents = filteredStudents.filter((student) =>
+    selectedSession.includes(student.year)
   );
 }
 
@@ -152,6 +180,18 @@ filteredStudents = filteredStudents.filter((user) => {
     schoolName.includes(filterSchool.toLowerCase())
   );
 });
+
+let sortedStudents = [...filteredStudents].sort((a, b) => {
+  // 1. Sort by year descending
+    if (a.year !== b.year) return b.year - a.year;
+
+    // 2. Sort by name descending (Z → A)
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+
+  });
 
 // console.log(filteredStudents);
 
@@ -192,14 +232,14 @@ filteredStudents = filteredStudents.filter((user) => {
     const doc = new jsPDF();
 
     doc.autoTable({
-      head: [["S.No.","Name", "Class", "Phone", "Location", "Mode", "School"]],
+      head: [["S.No.","Name", "Class", "Phone", "School", "Year"]],
       body: filteredStudents.map((student,index) => [
         index+1,
         student.name,
         student.class,
         student.phone,
-        student.mode,
         student.school,
+        student.year,
       ]),
     });
 
@@ -245,7 +285,7 @@ filteredStudents = filteredStudents.filter((user) => {
     <DashboardLayout>
       {isLoading && <Spinner />}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k24" title="Participants" />
+        <Header category="Antyodaya2k25" title="Participants" />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -385,6 +425,47 @@ filteredStudents = filteredStudents.filter((user) => {
                     )}
                   </div>
 
+                  <button
+                    onClick={toggleFilterBySessionDropdown}
+                    className="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-700 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200      "
+                    type="button"
+                  >
+                    <MdLocationPin />
+                    <span className="mx-1">Filter By Session</span>
+                    {isFilterBySessionDropdownOpen ? (
+                      <IoIosArrowUp />
+                    ) : (
+                      <IoIosArrowDown />
+                    )}
+                  </button>
+                  
+                  <div>
+                    {isFilterBySessionDropdownOpen && (
+                      <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
+                        <ul className="space-y-2 text-sm">
+                          {[2024, 2025].map((year) => (
+                            <li key={year} className="flex items-center">
+                              <input
+                                id={year}
+                                type="checkbox"
+                                name="session"
+                                value={year}
+                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2 outline-none"
+                                onChange={handleSessionBoxChange}
+                                checked={selectedSession.includes(year)}
+                              />
+                              <label
+                                htmlFor={year}
+                                className="ml-2 text-sm font-medium text-gray-900"
+                              >
+                                {year}
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                  
                 </div>
               </div>
@@ -410,13 +491,16 @@ filteredStudents = filteredStudents.filter((user) => {
                       School
                     </th>
                     <th scope="col" className="px-4 py-3">
+                      Year
+                    </th>
+                    <th scope="col" className="px-4 py-3">
                       {/* <span className="sr-only">Actions</span> */}
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="border-b">
-                  {currentUsers.map((student,index) => (
+                  {sortedStudents.map((student,index) => (
                     <tr key={student._id} className="border-x">
                     <td className="px-4 py-3">{indexOfFirstUser+index+1}</td>
                       <th
@@ -430,6 +514,7 @@ filteredStudents = filteredStudents.filter((user) => {
                      
                      
                       <td className="px-4 py-3">{student.school}</td>
+                      <td className="px-4 py-3">{student.year}</td>
 
                       <td className="px-4 py-3 flex items-center">
                         <div className="relative inline-block text-left pl-3">
