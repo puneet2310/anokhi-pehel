@@ -15,6 +15,10 @@ const EventSchema = new Schema({
     type: String,
     required: true,
   },
+  year: {
+    type: Number,
+    default: () => new Date().getFullYear(), // auto-set current year
+  },
   startTime: {
     type: String,
     required: true,
