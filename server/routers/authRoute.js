@@ -7,6 +7,9 @@ const {
   forgotPassword,
   resetPassword,
 } = require("../controller/authController");
+const { sendMailsFromSheet } = require("../controller/authController.js");
+
+
 const cors = require("cors");
 
 router.use(cors());
@@ -26,4 +29,5 @@ router.post("/forgot-password", forgotPassword);
 
 router.get("/reset-password/:id/:token", resetPassword);
 
+router.post("/send-mail", sendMailsFromSheet);
 module.exports = router;

@@ -2,7 +2,7 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 import { BiHelpCircle, BiSolidSpreadsheet } from "react-icons/bi";
 import { PiStudentFill } from "react-icons/pi";
 import { SiBytedance } from "react-icons/si";
-import { MdSimCardAlert } from "react-icons/md";
+import { MdSimCardAlert, MdEmail } from "react-icons/md";
 import { GiGamepadCross, GiTeacher, GiChart, GiPencil, GiInspiration } from "react-icons/gi";
 import { FaBook } from "react-icons/fa";
 
@@ -37,6 +37,10 @@ export const links = [
       {
         name: "Admission",
         icon: <GiInspiration />,
+      },
+      {
+        name: "Email-Service",
+        icon: <MdEmail />,
       },
       {
         name: "StudyPlan",

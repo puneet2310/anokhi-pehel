@@ -51,21 +51,26 @@ const Sidebar = () => {
                 <p className="text-gray-600 m-3 mt-4 uppercase font-bold hover:text-black">
                   {item.title}
                 </p>
-                {item.links.map((link) => (
-                  <NavLink
-                    to={`/${link.name}`}
-                    key={link.name}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? currentColor : "",
-                    })}
-                    className={({ isActive }) =>
-                      isActive ? activeLink : normalLink
-                    }
-                  >
-                    {link.icon}
-                    <span className="capitalize ">{link.name}</span>
-                  </NavLink>
-                ))}
+                {item.links.map((link) => {
+                  if (link.name === "Email-Service" && !user?.isAdmin) {
+                    return null; 
+                  }
+                  return (
+                    <NavLink
+                      to={`/${link.name}`}
+                      key={link.name}
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? currentColor : "",
+                      })}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      {link.icon}
+                      <span className="capitalize ">{link.name}</span>
+                    </NavLink>
+                  );
+                })}
               </div>
             ))}
           </div>

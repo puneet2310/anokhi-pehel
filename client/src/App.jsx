@@ -58,6 +58,7 @@ import JoinAsMentor from "./pages/Home/JoinAsMentor";
 import Winners from "./pages/Dashboard/Winners";
 import StudentScoresPictorially from "./pages/Performance/StudentScoresPictorially";
 import PromoteStudents from "./pages/Dashboard/PromoteStudents";
+import Email_Service from "./pages/Dashboard/Email_Service";
 const App = () => {
   const { loading } = useSelector((state) => state.alerts);
 
@@ -402,6 +403,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Notice />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Email-Service"
+              element={
+                <ProtectedRoute>
+                  <Email_Service />
                 </ProtectedRoute>
               }
             />
