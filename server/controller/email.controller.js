@@ -158,15 +158,28 @@ const sendMailsFromSheet = async (req, res) => {
                       </p>
 
                       <p style="font-size: 17px; margin-bottom: 25px;">
-                        Good luck with your interview— we are eagerly , waiting to meet you in person!!   
+                        Good luck with your interview— we are eagerly, waiting to meet you in person!!
                       </p>
                       <p style="margin-top: 30px; font-size: 17px; font-weight: 800; color: #0c1445;">
                         Warmest Regards,<br>
                         Team Anokhi पहल
                       </p>
+                      <div style="text-align: center; margin-top: 35px;">
+                        <a href="https://www.instagram.com/anokhipehel/#" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/k256hXxh/insta-logo.png" alt="Instagram" height="32" style="vertical-align: middle;">
+                        </a>
+                        <a href="https://anokhi-pehel.azurewebsites.net/" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/ccmwhvQk/website-logo.png" alt="website-logo" alt="Website" height="32" style="vertical-align: middle;">
+                        </a>
+                        <a href="https://www.linkedin.com/company/anokhi-pehel" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/xK3jrQpz/linkedin-logo.png" alt="Website" height="32" style="vertical-align: middle;">
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>`;
+                </div>
+              `;
+
 
               const mailOptions = {
                 from: `Anokhi Pehel <${process.env.email}>`,
@@ -230,6 +243,17 @@ const sendMailsFromSheet = async (req, res) => {
                         Warmest Regards,<br>
                         Team Anokhi पहल
                       </p>
+                      <div style="text-align: center; margin-top: 35px;">
+                        <a href="https://www.instagram.com/anokhipehel/#" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/k256hXxh/insta-logo.png" alt="Instagram" height="32" style="vertical-align: middle;">
+                        </a>
+                        <a href="https://anokhi-pehel.azurewebsites.net/" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/ccmwhvQk/website-logo.png" alt="website-logo" alt="Website" height="32" style="vertical-align: middle;">
+                        </a>
+                        <a href="https://www.linkedin.com/company/anokhi-pehel" target="_blank" style="margin: 0 12px;">
+                          <img src="https://i.ibb.co/xK3jrQpz/linkedin-logo.png" alt="Website" height="32" style="vertical-align: middle;">
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>`;
