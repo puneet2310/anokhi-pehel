@@ -2,6 +2,7 @@ const csvParser = require("csv-parser");
 const { Readable } = require("stream");
 const axios = require("axios");
 const transporter = require("../config/mailer.js");
+const User = require("../models/User.js");
 
 const sendMailsFromSheet = async (req, res) => {
   try {
@@ -17,6 +18,14 @@ const sendMailsFromSheet = async (req, res) => {
       meetupTime,    // selection only
       dateHeader     // recruitment only (new)
     } = req.body;
+
+    console.log(req.user);
+    const user_id = req.user.user.id;
+    //check if it is admin or not
+
+    const response_user = await User.findById(user_id);
+    console.log(response_user);
+    if(!response_user.isAdmin)return res.status(401).json({message:"Unauthorized Access", error: "You are not authorized to send the mail."})
 
     if (
       !sheetUrl ||

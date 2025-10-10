@@ -21,6 +21,7 @@ const Email_Service = () => {
   const [venue, setVenue] = useState("");
 
   const { user } = useSelector((state) => state.user);
+  const token = localStorage.getItem("token");
 
   const handleSend = async () => {
     if (
@@ -53,11 +54,23 @@ const Email_Service = () => {
         ...(category === "selection" && { selectedDate: formattedDate, meetupTime }),
         ...(category === "recruitment" && { timeHeader, panelHeader, dateHeader }),
       };
-      const res = await axios.post(`${BASE_URL}/send-mail`, postData);
+      const res = await axios.post(`${BASE_URL}/send-mail`, postData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setMessage(res.data.message);
     } catch (err) {
-      console.error(err);
-      setMessage("Error sending emails. Please try again.");
+      console.log(err);
+      if (err.response && err.response.data && err.response.data.error) {
+        setMessage(err.response.data.error);
+      } 
+      else if (err.message) {
+        setMessage(err.message); // fallback for general JS errors
+      } 
+      else {
+        setMessage("Unknown error occurred while sending mail.");
+      }
     } finally {
       setLoading(false);
     }

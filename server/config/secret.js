@@ -14,4 +14,4 @@ const generateTempToken = (userId) => {
   return jwt.sign({ user: { id: userId } }, JWT_KEY, { expiresIn: "30m" });
 };
 
-module.exports = { generateToken, verifyToken, generateTempToken };
+module.exports = { generateToken, verifyToken, generateTempToken, JWT_KEY };
