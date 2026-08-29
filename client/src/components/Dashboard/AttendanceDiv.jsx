@@ -7,6 +7,7 @@ const AttendanceBoxes = ({ classId }) => {
   const [isTopicCovered, setIsTopicCovered] = useState(false);
   const [total, setTotal] = useState(0);
   const [present, setPresent] = useState(0);
+  const [percentage, setPercentage] = useState(0);
   const [topicCovered, setTopicCovered] = useState("");
 
   const fetchAttendance = async () => {
@@ -15,8 +16,13 @@ const AttendanceBoxes = ({ classId }) => {
         `${BASE_URL}/attendance?classId=${classId}`
       );
       if (response.data) {
-        setTotal(response.data.totalStudents || 0);
-        setPresent(response.data.totalPresentStudents || 0);
+        const totalCount = response.data.totalStudents || 0;
+        const presentCount = response.data.totalPresentStudents || 0;
+        setTotal(totalCount);
+        setPresent(presentCount);
+        const percentagePresent =
+          totalCount > 0 ? ((presentCount / totalCount) * 100).toFixed(2) : 0;
+        setPercentage(percentagePresent);
         setIsAttendanceTaken(true);
       }
     } catch (error) {
