@@ -1,119 +1,60 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../../Service/helper";
 import { FaPlus, FaCalendarCheck, FaSearch } from "react-icons/fa";
-
-const CLASS_LIST = [
-  { id: "Nursery", label: "Class Nursery" },
-  { id: "1", label: "Class 1" },
-  { id: "2", label: "Class 2" },
-  { id: "3", label: "Class 3" },
-  { id: "4", label: "Class 4" },
-  { id: "5", label: "Class 5" },
-  { id: "Navodaya", label: "Class Navodaya" },
-  { id: "6", label: "Class 6" },
-  { id: "7", label: "Class 7" },
-  { id: "8", label: "Class 8" },
-  { id: "9", label: "Class 9" },
-  { id: "10", label: "Class 10" },
-  { id: "11", label: "Class 11" },
-  { id: "12", label: "Class 12" },
-];
+import { MdErrorOutline, MdRefresh } from "react-icons/md";
+import { useDashboardData } from "../../hooks/useDashboardData";
+import { classes } from "../../constants/Dashboard";
 
 const ClassAttendanceTable = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [classData, setClassData] = useState([]);
-
-  useEffect(() => {
-    const fetchAllClassData = async () => {
-      setLoading(true);
-      try {
-        let studentCounts = {};
-        try {
-          const countRes = await axios.get(`${BASE_URL}/studentCounts`);
-          studentCounts = countRes.data?.countsByClass || {};
-        } catch (err) {
-          console.error("Error fetching student counts:", err);
-        }
-
-        // Fetch attendance and topic data for each class in parallel
-        const results = await Promise.all(
-          CLASS_LIST.map(async (cls) => {
-            const enrolled = studentCounts[cls.id] || 0;
-            let isAttendanceTaken = false;
-            let total = enrolled;
-            let present = 0;
-            let percentage = 0;
-            let isTopicCovered = false;
-            let topicCovered = "";
-
-            // Fetch attendance
-            try {
-              const attRes = await axios.get(
-                `${BASE_URL}/attendance?classId=${cls.id}`
-              );
-              if (attRes.data && typeof attRes.data.totalStudents === "number") {
-                total = attRes.data.totalStudents;
-                present = attRes.data.totalPresentStudents || 0;
-                percentage =
-                  total > 0 ? Math.round((present / total) * 100) : 0;
-                isAttendanceTaken = true;
-              }
-            } catch (attErr) {
-              isAttendanceTaken = false;
-            }
-
-            // Fetch topic
-            try {
-              const topicRes = await axios.get(
-                `${BASE_URL}/topicCovered?classId=${cls.id}`
-              );
-              const topic = topicRes.data?.topicsCovered?.[0]?.topic;
-              if (topic) {
-                topicCovered = topic;
-                isTopicCovered = true;
-              }
-            } catch (topicErr) {
-              isTopicCovered = false;
-            }
-
-            return {
-              id: cls.id,
-              label: cls.label,
-              enrolled,
-              isAttendanceTaken,
-              total,
-              present,
-              percentage,
-              isTopicCovered,
-              topicCovered,
-            };
-          })
-        );
-
-        setClassData(results);
-      } catch (error) {
-        console.error("Error fetching class dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllClassData();
-  }, []);
-
-  const totalEnrolled = classData.reduce((sum, item) => sum + (item.enrolled || 0), 0);
-  const totalPresent = classData.reduce((sum, item) => sum + (item.isAttendanceTaken ? item.present : 0), 0);
-  const totalMarkedStudents = classData.reduce((sum, item) => sum + (item.isAttendanceTaken ? item.total : 0), 0);
-  const classesMarkedCount = classData.filter((item) => item.isAttendanceTaken).length;
-  const overallPercentage = totalMarkedStudents > 0 ? Math.round((totalPresent / totalMarkedStudents) * 100) : 0;
+  const { classData, loading, error, refetch, metrics } = useDashboardData();
+  const {
+    totalEnrolled,
+    totalPresent,
+    totalMarkedStudents,
+    classesMarkedCount,
+    overallPercentage,
+  } = metrics;
 
   return (
-    <div className="w-full px-2 md:px-10 pb-10">
+    <div className="w-full px-2 sm:px-4 md:px-10 pb-10">
+      {/* User-Friendly Error Alert Banner */}
+      {error && (
+        <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <MdErrorOutline className="text-2xl text-rose-600 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-rose-900">
+                Unable to load live dashboard data
+              </p>
+              <p className="text-xs text-rose-600 mt-0.5">{error}</p>
+            </div>
+          </div>
+          <button
+            onClick={refetch}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95 shrink-0"
+          >
+            <MdRefresh className="text-sm" />
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
+
       {/* 1. Top Standalone KPI Metric Cards */}
-      {!loading && (
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6">
+          {[1, 2, 3, 4].map((item) => (
+            <div
+              key={item}
+              className="bg-white p-4 rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm animate-pulse space-y-2"
+            >
+              <div className="h-3.5 bg-slate-200 rounded w-20"></div>
+              <div className="h-7 bg-slate-200 rounded w-16"></div>
+              <div className="h-3 bg-slate-100 rounded w-28"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6">
           <div className="bg-white p-4 rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-sm">
             <span className="text-slate-500 font-medium text-xs block">
@@ -158,7 +99,7 @@ const ClassAttendanceTable = () => {
               Classes Marked
             </span>
             <span className="text-xl md:text-2xl font-bold text-indigo-700 mt-1 block">
-              {classesMarkedCount} / {CLASS_LIST.length}
+              {classesMarkedCount} / {classes.length}
             </span>
             <span className="text-[11px] text-slate-400 block mt-0.5">
               Classes recorded today
@@ -221,19 +162,39 @@ const ClassAttendanceTable = () => {
           </div>
         </div>
 
-        {/* Loading Skeleton */}
+        {/* Loading Skeletons matching exact classes length (14 rows) */}
         {loading ? (
-          <div className="p-6 space-y-4 animate-pulse">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <div
-                key={item}
-                className="h-12 bg-slate-100 rounded-lg w-full flex items-center justify-between px-4"
-              >
-                <div className="h-4 bg-slate-200 rounded w-24"></div>
-                <div className="h-4 bg-slate-200 rounded w-28"></div>
-                <div className="h-4 bg-slate-200 rounded w-48"></div>
-              </div>
-            ))}
+          <div>
+            {/* Desktop Table Skeleton (14 Rows) */}
+            <div className="hidden sm:block p-6 space-y-3">
+              {classes.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl w-full flex items-center justify-between px-6 animate-pulse"
+                >
+                  <div className="h-4 bg-slate-200 rounded w-24"></div>
+                  <div className="h-4 bg-slate-200 rounded w-32"></div>
+                  <div className="h-4 bg-slate-200 rounded w-48"></div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Cards Skeleton (14 Cards) */}
+            <div className="block sm:hidden p-3 space-y-2.5">
+              {classes.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/70 space-y-2.5 shadow-sm animate-pulse"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="h-4 bg-slate-200 rounded w-24"></div>
+                    <div className="h-4 bg-slate-200 rounded w-16"></div>
+                  </div>
+                  <div className="h-3 bg-slate-200 rounded w-36"></div>
+                  <div className="h-3 bg-slate-200 rounded w-48"></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <>
@@ -318,7 +279,7 @@ const ClassAttendanceTable = () => {
                       )}
                     </td>
                     <td className="py-4 px-6 text-slate-600 font-medium text-xs md:text-sm">
-                      {classesMarkedCount} of {CLASS_LIST.length} classes recorded
+                      {classesMarkedCount} of {classes.length} classes recorded
                     </td>
                   </tr>
                 </tfoot>
@@ -397,4 +358,5 @@ const ClassAttendanceTable = () => {
 };
 
 export default ClassAttendanceTable;
+
 
