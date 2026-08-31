@@ -11,6 +11,7 @@ const {
   getStudentsFromLastAttendance,
   promoteStudent,
   changeStatus,
+  getStudentCounts,
 } = require("../controller/studentController");
 
 app.use(cors());
@@ -89,6 +90,7 @@ router.get("/studentList", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 
@@ -204,4 +206,6 @@ router.delete("/deleteStudents/:id", async (req, res) => {
 router.post("/studentTable", getStudentsFromLastAttendance); //Route to get students details of any class for a particular month
 router.put("/promoteStudent/:id", promoteStudent);  //Route to promote the students
 router.put("/updateStudentStatus/:id", changeStatus); //Route to update student status(active or inactive)
+router.get("/studentCounts", getStudentCounts);
+
 module.exports = router;

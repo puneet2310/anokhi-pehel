@@ -30,23 +30,15 @@ const ClassAttendanceTable = () => {
     const fetchAllClassData = async () => {
       setLoading(true);
       try {
-        // 1. Fetch all students to compute enrolled count per class
         let studentCounts = {};
         try {
-          const studentRes = await axios.get(`${BASE_URL}/studentList`);
-          if (Array.isArray(studentRes.data)) {
-            studentRes.data.forEach((student) => {
-              if (student.active !== false && student.className) {
-                studentCounts[student.className] =
-                  (studentCounts[student.className] || 0) + 1;
-              }
-            });
-          }
+          const countRes = await axios.get(`${BASE_URL}/studentCounts`);
+          studentCounts = countRes.data?.countsByClass || {};
         } catch (err) {
-          console.error("Error fetching student list:", err);
+          console.error("Error fetching student counts:", err);
         }
 
-        // 2. Fetch attendance and topic data for each class in parallel
+        // Fetch attendance and topic data for each class in parallel
         const results = await Promise.all(
           CLASS_LIST.map(async (cls) => {
             const enrolled = studentCounts[cls.id] || 0;

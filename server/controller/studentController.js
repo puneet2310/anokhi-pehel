@@ -80,9 +80,39 @@ const changeStatus = async(req, res) => {
     console.error("Error promoting student:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
+const getStudentCounts = async (req, res) => {
+  try {
+    const classCounts = await Student.aggregate([
+      { $match: { active: { $ne: false } } },
+      { $group: { _id: "$className", count: { $sum: 1 } } },
+    ]);
+
+    const totalStudents = await Student.countDocuments({
+      active: { $ne: false },
+    });
+
+    const countsByClass = {};
+    classCounts.forEach((item) => {
+      if (item._id) {
+        countsByClass[item._id] = item.count;
+      }
+    });
+
+    res.json({
+      totalStudents,
+      countsByClass,
+    });
+  } catch (error) {
+    console.error("Error fetching student counts:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = { 
   getStudentsFromLastAttendance,
   promoteStudent,
-  changeStatus
+  changeStatus,
+  getStudentCounts,
 };
