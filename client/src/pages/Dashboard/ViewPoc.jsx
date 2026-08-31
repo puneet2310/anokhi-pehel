@@ -104,7 +104,7 @@ const ViewPocList = () => {
 
     doc.autoTable({
       head: [["S.No.","Name", "Contact No.", "School", "Year"]],
-      body: filteredPocList.map((poc,index) => [
+      body: sortedPocList.map((poc,index) => [
         index+1,
         poc.nameOfPoc,
         poc.contact,

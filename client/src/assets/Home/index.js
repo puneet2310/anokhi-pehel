@@ -16,7 +16,7 @@ import sandeep from "./sandeep.jpeg";
 import study2 from "./study2.png";
 import connectWithUs from "./connectWithUs.svg";
 import connectWithUs3 from "./connectWithUs3.svg";
-import DirImg from "./DirImg.webp";
+import DirImg from "./Director.png";
 import DirectorImg from "./directorImg.jpeg";
 import BasantSir from "./BasantSir.jpg";
 import RajivSir from "./RajivSir.jpg";

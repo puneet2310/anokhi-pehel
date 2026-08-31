@@ -1,11 +1,45 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { classes, months, subjects } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
 import Pagination from "../../components/Dashboard/Pagination";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+
+
+// assuming our session starts from 1st April to 31st March
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth();
+
+const currentSessionStartYear =
+  currentMonth >= 3 ? currentYear : currentYear - 1;
+
+const currentSession = `${currentSessionStartYear}-${currentSessionStartYear + 1}`;
+
+// getting session from 2018-2019 to current session
+const sessions = Array.from(
+  { length: currentSessionStartYear - 2018 + 1 },
+  (_, index) => {
+    const startYear = currentSessionStartYear - index;
+    return `${startYear}-${startYear + 1}`;
+  }
+);
+const getSessionFromDate = (date) => {
+  const topicDate = new Date(date);
+
+  const year = topicDate.getFullYear();
+  const month = topicDate.getMonth();
+
+  // April = 3
+  if (month >= 3) {
+    return `${year}-${year + 1}`;
+  }
+
+  return `${year - 1}-${year}`;
+};
 
 const FindTopic = () => {
   const navigate = useNavigate();
@@ -19,6 +53,10 @@ const FindTopic = () => {
   const [topics, setTopics] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [topicsPerPage, setTopicsPerPage] = useState(initialTopics);
+  const [session, setSession] = useState([currentSession]);
+  const [isSessionDropdownOpen, setIsSessionDropdownOpen] = useState(false);
+  const [filterdTopic, setFilteredTopic] = useState([]);
+  const sessionDropdownRef = useRef(null);
   const onChange = (e) => {
     const { name, value } = e.target;
     setCredentials({ ...credentials, [name]: value });
@@ -31,7 +69,54 @@ const FindTopic = () => {
     setTopicsPerPage(initialTopics);
     setCurrentPage(1);
   };
+  const onsessionChange = (selectedSession) => {
+    let updatedSessions;
 
+    if (session.includes(selectedSession)) {
+      updatedSessions = session.filter(
+        (item) => item !== selectedSession
+      );
+    } else {
+      updatedSessions = [...session, selectedSession];
+    }
+
+    setSession(updatedSessions);
+    setCurrentPage(1);
+
+    if (updatedSessions.length === 0) {
+      setFilteredTopic([]);
+      return;
+    }
+
+    const sessionFilteredTopic = topics.filter((topic) => {
+      const topicDate = new Date(topic.date);
+
+      return updatedSessions.some((selectedSession) => {
+        const [startYear, endYear] = selectedSession
+          .split("-")
+          .map(Number);
+
+        const startDate = new Date(startYear, 3, 1);
+        const endDate = new Date(endYear, 3, 1);
+
+        return topicDate >= startDate && topicDate < endDate;
+      });
+    });
+
+    setFilteredTopic(sessionFilteredTopic);
+  };
+
+  const handleSelectAllSessions = (e) => {
+    if (e.target.checked) {
+      setSession([...sessions]);
+      setFilteredTopic(topics);
+    } else {
+      setSession([]);
+      setFilteredTopic([]);
+    }
+
+    setCurrentPage(1);
+  };
   const fetchTopicCovered = async (classId, subject) => {
     try {
       const response = await axios.get(`${BASE_URL}/topics`, {
@@ -70,19 +155,30 @@ const FindTopic = () => {
         );
 
         setTopics(topicsWithMentorNames);
+
+        const currentSessionTopics = topicsWithMentorNames.filter((topic) => {
+          return getSessionFromDate(topic.date) === currentSession;
+        });
+
+        setFilteredTopic(currentSessionTopics);
+        setSession([currentSession]);
       } else {
         setTopics([]);
+        setFilteredTopic([]);
+        setSession([currentSession]);
       }
     } catch (error) {
       console.error("Error fetching topics:", error);
       setTopics([]); // Reset topics on error
+      setFilteredTopic([]);
+      setSession([currentSession]);
     }
   };
 
   // Calculate the indices for the current page
   const indexOfLastTopic = currentPage * topicsPerPage;
   const indexOfFirstTopic = indexOfLastTopic - topicsPerPage;
-  const currentTopics = topics.slice(indexOfFirstTopic, indexOfLastTopic);
+  const currentTopics = filterdTopic.slice(indexOfFirstTopic, indexOfLastTopic);
 
   // Function to handle page change
   const handlePageChange = (pageNumber) => {
@@ -101,12 +197,28 @@ const FindTopic = () => {
     }
   };
   // Calculate total pages
-  const totalPages = Math.ceil(topics.length / topicsPerPage);
+  const totalPages = Math.ceil(filterdTopic.length / topicsPerPage);
 
   const handleUsersPerPageChange = (e) => {
     setTopicsPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sessionDropdownRef.current &&
+        !sessionDropdownRef.current.contains(event.target)
+      ) {
+        setIsSessionDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <DashboardLayout>
@@ -168,6 +280,77 @@ const FindTopic = () => {
                     </select>
                   </div>
                 </div>
+                <div className="sm:col-span-2 relative" ref={sessionDropdownRef}>
+                  <label
+                    htmlFor="session"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Academic Session
+                  </label>
+
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsSessionDropdownOpen(!isSessionDropdownOpen)}
+                      className="block w-full rounded-md border-0 py-1.5 px-3 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6 bg-white"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {session.length === 0
+                            ? "Select Session"
+                            : session.length === 1
+                              ? session[0]
+                              : `${session.length} Sessions Selected`}
+                        </span>
+
+                        <span>
+                          {isSessionDropdownOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                        </span>
+                      </div>
+                    </button>
+
+                    {isSessionDropdownOpen && (
+                      <div className="absolute z-10 mt-1 w-full sm:max-w-xs bg-white rounded-md shadow-lg ring-1 ring-gray-300">
+                        <ul className="space-y-2 text-sm max-h-48 p-3 overflow-y-auto">
+                          <li className="flex items-center">
+                            <input
+                              id="select-all-sessions"
+                              type="checkbox"
+                              checked={session.length === sessions.length}
+                              onChange={handleSelectAllSessions}
+                              className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 focus:ring-2"
+                            />
+
+                            <label
+                              htmlFor="select-all-sessions"
+                              className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
+                            >
+                              Select All
+                            </label>
+                          </li>
+                          {sessions.map((item) => (
+                            <li key={item} className="flex items-center">
+                              <input
+                                id={`session-${item}`}
+                                type="checkbox"
+                                checked={session.includes(item)}
+                                onChange={() => onsessionChange(item)}
+                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 focus:ring-2"
+                              />
+
+                              <label
+                                htmlFor={`session-${item}`}
+                                className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
+                              >
+                                {item}
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             <div>
@@ -183,6 +366,7 @@ const FindTopic = () => {
                       <th className="py-2 px-4">Date</th>
                       <th className="py-2 px-4">Topic</th>
                       <th className="py-2 px-4">Mentor</th>
+                      <th className="py-2 px-4">Session</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -203,6 +387,10 @@ const FindTopic = () => {
                         </td>
                         <td className="py-2 px-4">{topic.topic}</td>
                         <td className="py-2 px-4">{topic.mentorName}</td>
+
+                        <td className="py-2 px-4">
+                          {getSessionFromDate(topic.date)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -220,7 +408,7 @@ const FindTopic = () => {
           initialUsers={initialTopics}
           usersPerPage={topicsPerPage}
           handleUsersPerPageChange={handleUsersPerPageChange}
-          totalUsers={topics.length}
+          totalUsers={filterdTopic.length}
         />
       </div>
     </DashboardLayout>

@@ -128,7 +128,7 @@ const EventPage = () => {
 
     doc.autoTable({
       head: [["S.No.","Group", "Name", "Venue", "Start Time", "End Time", "Coordinator", "Phone", "Year"]],
-      body: filteredEvents.map((event,index) => [
+      body: sortedEventsList.map((event,index) => [
         index+1,
         event.eventGroup,
         event.eventName,

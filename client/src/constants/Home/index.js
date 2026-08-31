@@ -90,7 +90,7 @@ export const feedback = [
     id: "feedback-1",
     content:
       "As the director, I commend the students of MNNIT for their impactful initiative, Anokhi Pehel, dedicated to providing quality education to children from economically weaker backgrounds. ",
-    name: "Prof. Rama Shanker Verma",
+    name: "Prof. K. Umamaheshwar Rao",
     title: "Director MNNIT Allahabad",
     img: DirImg,
   },
