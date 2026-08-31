@@ -1,13 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus, FaCalendarCheck, FaSearch } from "react-icons/fa";
-import { MdErrorOutline, MdRefresh } from "react-icons/md";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import { classes } from "../../constants/Dashboard";
+import ErrorMessageModel from "../Models/ErrorMessageModel";
 
 const ClassAttendanceTable = () => {
   const navigate = useNavigate();
   const { classData, loading, error, refetch, metrics } = useDashboardData();
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      setShowErrorModal(true);
+    }
+  }, [error]);
+
   const {
     totalEnrolled,
     totalPresent,
@@ -18,27 +26,16 @@ const ClassAttendanceTable = () => {
 
   return (
     <div className="w-full px-2 sm:px-4 md:px-10 pb-10">
-      {/* User-Friendly Error Alert Banner */}
-      {error && (
-        <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-          <div className="flex items-center gap-3">
-            <MdErrorOutline className="text-2xl text-rose-600 shrink-0" />
-            <div>
-              <p className="text-sm font-bold text-rose-900">
-                Unable to load live dashboard data
-              </p>
-              <p className="text-xs text-rose-600 mt-0.5">{error}</p>
-            </div>
-          </div>
-          <button
-            onClick={refetch}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95 shrink-0"
-          >
-            <MdRefresh className="text-sm" />
-            <span>Retry</span>
-          </button>
-        </div>
-      )}
+      <ErrorMessageModel
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onRetry={() => {
+          setShowErrorModal(false);
+          refetch();
+        }}
+        title="Failed to Load Dashboard Data"
+        message={error}
+      />
 
       {/* 1. Top Standalone KPI Metric Cards */}
       {loading ? (
