@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
@@ -245,7 +246,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
     doc.save("students_table.pdf");
   };
-  
+
   const handleDownloadTableCsv = () => {
     const csvContent = [
       ["S.No.", "Name", "Class", "Phone", "School", "Year"],
@@ -268,6 +269,57 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Download Excel workbook with multiple sheets (one per school)
+  const handleDownloadExcelBySchool = () => {
+    // Get unique schools from filtered students
+    const uniqueSchools = [...new Set(filteredStudents.map(student => student.school))].sort();
+    
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Track sheet names to handle duplicates
+    const usedSheetNames = new Set();
+    
+    // Create a sheet for each school
+    uniqueSchools.forEach((school) => {
+      const schoolStudents = filteredStudents.filter(student => student.school === school);
+      
+      // Prepare data with headers
+      const sheetData = [
+        ["S.No.", "Name", "Class", "Phone", "School", "Year"],
+        ...schoolStudents.map((student, index) => [
+          index + 1,
+          student.name,
+          student.class,
+          student.phone,
+          student.school,
+          student.year
+        ])
+      ];
+      
+      // Create worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+      
+      // Generate unique sheet name (Excel limits sheet names to 31 chars)
+      let sheetName = school.substring(0, 31);
+      let counter = 1;
+      const originalName = sheetName;
+      
+      // If sheet name already exists, append a counter
+      while (usedSheetNames.has(sheetName)) {
+        counter++;
+        const suffix = ` (${counter})`;
+        sheetName = originalName.substring(0, 31 - suffix.length) + suffix;
+      }
+      
+      usedSheetNames.add(sheetName);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    });
+    
+    // Download the workbook
+    XLSX.writeFile(workbook, `students_by_school.xlsx`);
   };
        
 
@@ -409,6 +461,15 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                         >
                           <MdDownload className="mt-1" />{" "}
                           <span className="ml-1">Download Csv</span>
+                        </a>
+                      </li>
+                      <li onClick={handleDownloadExcelBySchool}>
+                        <a
+                          href="#"
+                          className="flex py-2 px-4 text-green-600 hover:bg-green-200"
+                        >
+                          <MdDownload className="mt-1" />{" "}
+                          <span className="ml-1">Download Excel (By School)</span>
                         </a>
                       </li>
                     </ul>
