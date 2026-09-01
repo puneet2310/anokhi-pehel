@@ -116,6 +116,30 @@ const ViewPocList = () => {
     doc.save("poc_list.pdf");
   };
 
+  // Download CSV file
+  const handleDownloadTableCsv = () => {
+    const csvContent = [
+      ["S.No.", "Name", "Contact No.", "School", "Year"],
+      ...sortedPocList.map((poc, index) => [
+        index + 1,
+        poc.nameOfPoc,
+        poc.contact,
+        poc.school,
+        poc.year
+      ])
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "poc_list.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DashboardLayout>
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
@@ -203,13 +227,28 @@ const ViewPocList = () => {
               {isActionsDropdownOpen && (
                 <div className="absolute right-0 mt-2 z-20 w-40 bg-white rounded-lg shadow-lg border border-gray-100">
                   <ul className="py-1 text-sm text-gray-700">
-                    <li onClick={handleDownloadTable}>
+                    <li onClick={(e) => {
+                      e.preventDefault();
+                      handleDownloadTable();
+                    }}>
                       <a
                         href="#"
                         className="flex py-2 px-4 text-green-600 hover:bg-green-50 hover:text-green-700 transition duration-150"
                       >
                         <MdDownload className="mt-0.5 mr-1" />
                         <span>Download Pdf</span>
+                      </a>
+                    </li>
+                    <li onClick={(e) => {
+                      e.preventDefault();
+                      handleDownloadTableCsv();
+                    }}>
+                      <a
+                        href="#"
+                        className="flex py-2 px-4 text-green-600 hover:bg-green-50 hover:text-green-700 transition duration-150"
+                      >
+                        <MdDownload className="mt-0.5 mr-1" />
+                        <span>Download Csv</span>
                       </a>
                     </li>
                   </ul>

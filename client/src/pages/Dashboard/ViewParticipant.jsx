@@ -245,6 +245,31 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
     doc.save("students_table.pdf");
   };
+  
+  const handleDownloadTableCsv = () => {
+    const csvContent = [
+      ["S.No.", "Name", "Class", "Phone", "School", "Year"],
+      ...filteredStudents.map((student, index) => [
+        index + 1,
+        student.name,
+        student.class,
+        student.phone,
+        student.school,
+        student.year
+      ])
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "students_table.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+       
 
   const handleDelete = async (studentId) => {
     const confirmDelete = window.confirm(
@@ -374,7 +399,16 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                           className="flex py-2 px-4 text-green-600 hover:bg-green-200"
                         >
                           <MdDownload className="mt-1" />{" "}
-                          <span className="ml-1">Download</span>
+                          <span className="ml-1">Download Pdf</span>
+                        </a>
+                      </li>
+                      <li onClick={handleDownloadTableCsv}>
+                        <a
+                          href="#"
+                          className="flex py-2 px-4 text-green-600 hover:bg-green-200"
+                        >
+                          <MdDownload className="mt-1" />{" "}
+                          <span className="ml-1">Download Csv</span>
                         </a>
                       </li>
                     </ul>
