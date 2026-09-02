@@ -2,7 +2,7 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 import { BiHelpCircle, BiSolidSpreadsheet } from "react-icons/bi";
 import { PiStudentFill } from "react-icons/pi";
 import { SiBytedance } from "react-icons/si";
-import { MdSimCardAlert, MdEmail } from "react-icons/md";
+import { MdSimCardAlert, MdEmail,MdDashboard } from "react-icons/md";
 import { GiGamepadCross, GiTeacher, GiChart, GiPencil, GiInspiration } from "react-icons/gi";
 import { FaBook } from "react-icons/fa";
 
@@ -10,6 +10,10 @@ export const links = [
   {
     title: "Academics",
     links: [
+      {
+        name:"Dashboard",
+        icon:<MdDashboard/>
+      },
       {
         name: "Students",
         icon: <PiStudentFill />,

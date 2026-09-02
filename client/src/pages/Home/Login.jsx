@@ -27,10 +27,10 @@ export default function Login() {
       if (response.data.success) {
         localStorage.setItem("token", response.data.authToken);
         message.success("Login successfully!!!");
-        // navigate("/Dashboard");
+         navigate("/Dashboard");
       } else {
         message.error(response.data.error);
-        // navigate("/login");
+        navigate("/login");
       }
     } catch (err) {
       console.log(err);

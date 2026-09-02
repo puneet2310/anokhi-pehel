@@ -6,6 +6,7 @@ import Button from "./Button";
 const Navbar = () => {
   const [active, setActive] = useState("Home");
   const [toggle, setToggle] = useState(false);
+  const token = localStorage.getItem("token");
 
   return (
     <nav className="w-full flex py-4 -mb-2 -mt-2 justify-between items-center navbar">
@@ -28,6 +29,17 @@ const Navbar = () => {
             <Link to={`/${nav.id}`}>{nav.title}</Link>
           </li>
         ))}
+        {token && 
+        <li
+            key="dashboard"
+            className={`font-poppins font-medium cursor-pointer text-[16px] ${
+              active === "dashboard" ? "text-black font-bold" : "text-slate-900"
+            } ${5=== navLinks.length - 1 ? "mr-0" : "mr-10"} ml-10`}
+            onClick={() => setActive("dashboard")}
+          >
+            <Link to={`/dashboard`}>Back To Dashboard</Link>
+          </li>
+        }
       </ul>
       <div className="sm:hidden flex flex-1 justify-end items-center">
         <img

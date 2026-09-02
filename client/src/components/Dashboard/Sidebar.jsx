@@ -30,7 +30,7 @@ const Sidebar = () => {
         <>
           <div className="flex justify-between items-center">
             <Link
-              to="/Dashboard"
+              to="/"
               className="items-center gap-3 ml-3 mt-4 flex text-xl text-black font-extrabold tracking-tight text-slate-900"
             >
               <img src={logo} alt="logo" className="w-[20%] h-[20%]" />{" "}
