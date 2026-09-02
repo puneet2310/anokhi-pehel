@@ -1,11 +1,11 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useEffect, useState } from "react";
-import { jsPDF } from "jspdf";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import Button from "../../components/Dashboard/Button";
 import { BASE_URL } from "../../../src/Service/helper";
+import { downloadCSV, downloadPDF } from "../../../src/Service/utilityfunctions";
 
 const Student = () => {
   const location = useLocation();
@@ -101,67 +101,38 @@ const Student = () => {
   }, [nameFilter, classFilter, participants]);
 
 
-  const downloadPDF = () => {
-    const doc = new jsPDF();
+  const handleDownloadPDF = () => {
+    const columns = [
+      { label: "S.No.", key: "index" },
+      { label: "Name", key: "name" },
+      { label: "Class", key: "class" },
+      { label: "School", key: "school" },
+      { label: "Contact", key: "phone" }
+    ];
 
-    // Set the document title
-    doc.setFontSize(18);
-    doc.text("List of Participants for the Event", 14, 20);
+    const dataWithIndex = filteredParticipants.map((participant, index) => ({
+      ...participant,
+      index: index + 1
+    }));
 
-    // Set font for table data
-    doc.setFontSize(12);
-
-    // Start the table at the specified coordinates
-    const tableColumn = ["S.No.","Name", "Class", "School", "Contact"];
-    const tableRows = [];
-
-    filteredParticipants.forEach((participant,index) => {
-      tableRows.push([
-        index+1,
-        participant.name,
-        participant.class,
-        participant.school,
-        participant.phone,
-      ]);
+    downloadPDF(dataWithIndex, columns, "participants_list", {
+      title: "List of Participants for the Event",
+      titleFontSize: 18,
+      startY: 30
     });
-
-    // Add the table to the PDF
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 30,
-    });
-
-    // Save the PDF
-    doc.save("participants_list.pdf");
   };
 
 
 
-  const downloadCSV = () => {
-    const rows = [];
-    // Add table headers
-    rows.push(["Name", "Class", "School", "Contact"]);
+  const handleDownloadParticipantsCSV = () => {
+    const columns = [
+      { label: "Name", key: "name" },
+      { label: "Class", key: "class" },
+      { label: "School", key: "school" },
+      { label: "Contact", key: "phone" }
+    ];
 
-    // Add data from participants
-    filteredParticipants.forEach((participant) => {
-      rows.push([participant.name, participant.class, participant.school, participant.phone]);
-    });
-
-    // Create a CSV string
-    const csvString = rows.map(row => row.join(",")).join("\n");
-
-    // Create a blob from the CSV string
-    const blob = new Blob([csvString], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    // Create an anchor element and trigger the download
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "participants_list.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadCSV(filteredParticipants, columns, "participants_list");
   };
   // Function to render the participant details in a table
   const renderParticipantsTable = () => {
@@ -200,7 +171,7 @@ const Student = () => {
   <div className="mb-6 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
     {/* CSV Download Button */}
     <button
-      onClick={downloadCSV}
+      onClick={handleDownloadParticipantsCSV}
       className="bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none w-full sm:w-auto"
     >
       Download CSV
@@ -208,7 +179,7 @@ const Student = () => {
 
     {/* PDF Download Button */}
     <button
-      onClick={downloadPDF}
+      onClick={handleDownloadPDF}
       className="bg-green-900 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none w-full sm:w-auto"
     >
       Download PDF

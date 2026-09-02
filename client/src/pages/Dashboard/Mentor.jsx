@@ -4,9 +4,8 @@ import Button from "../../components/Dashboard/Button";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import { BASE_URL } from "../../Service/helper";
+import { downloadPDF } from "../../Service/utilityfunctions";
 import { useSelector } from "react-redux";
 import { MdManageSearch } from "react-icons/md";
 import Spinner from "../../components/Spinner.jsx";
@@ -161,22 +160,18 @@ const Mentor = () => {
 
   //Download Mentor and Alumni list as PDF
   const handleDownloadTable = () => {
-    // Create a new jsPDF instance
-    const doc = new jsPDF();
+    const columns = [
+      { label: "Name", key: "name" },
+      { label: "Reg Number", key: "regnumber" },
+      { label: "Phone", key: "phone" },
+      { label: "Email", key: "email" }
+    ];
 
-    doc.text("Mentors", 14, 10);
-    // Mentor table
-    doc.autoTable({
-      startY: 15,
-      head: [["Name", "Reg Number", "Phone", "Email"]],
-      body: users.map((user) => [
-        user.name,
-        user.regnumber,
-        user.phone,
-        user.email,
-      ]),
+    downloadPDF(users, columns, "mentors_list", {
+      title: "Mentors",
+      titleFontSize: 14,
+      startY: 15
     });
-    doc.save("mentors_table.pdf");
   };
 
   return (

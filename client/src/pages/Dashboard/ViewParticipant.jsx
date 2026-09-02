@@ -16,10 +16,9 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes, locations } from "../../constants/Dashboard";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { BASE_URL } from "../../../src/Service/helper";
+import { downloadCSV, downloadPDF } from "../../../src/Service/utilityfunctions";
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
 import Pagination from "../../components/Dashboard/Pagination.jsx";
@@ -230,45 +229,39 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     setCurrentPage(1);
   };
   const handleDownloadTable = () => {
-    const doc = new jsPDF();
+    const columns = [
+      { label: "S.No.", key: "index" },
+      { label: "Name", key: "name" },
+      { label: "Class", key: "class" },
+      { label: "Phone", key: "phone" },
+      { label: "School", key: "school" },
+      { label: "Year", key: "year" }
+    ];
 
-    doc.autoTable({
-      head: [["S.No.","Name", "Class", "Phone", "School", "Year"]],
-      body: filteredStudents.map((student,index) => [
-        index+1,
-        student.name,
-        student.class,
-        student.phone,
-        student.school,
-        student.year,
-      ]),
-    });
+    const dataWithIndex = sortedStudents.map((student, index) => ({
+      ...student,
+      index: index + 1
+    }));
 
-    doc.save("students_table.pdf");
+    downloadPDF(dataWithIndex, columns, "students_table");
   };
 
   const handleDownloadTableCsv = () => {
-    const csvContent = [
-      ["S.No.", "Name", "Class", "Phone", "School", "Year"],
-      ...filteredStudents.map((student, index) => [
-        index + 1,
-        student.name,
-        student.class,
-        student.phone,
-        student.school,
-        student.year
-      ])
-    ].map(row => row.join(",")).join("\n");
+    const columns = [
+      { label: "S.No.", key: "index" },
+      { label: "Name", key: "name" },
+      { label: "Class", key: "class" },
+      { label: "Phone", key: "phone" },
+      { label: "School", key: "school" },
+      { label: "Year", key: "year" }
+    ];
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "students_table.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const dataWithIndex = sortedStudents.map((student, index) => ({
+      ...student,
+      index: index + 1
+    }));
+
+    downloadCSV(dataWithIndex, columns, "students_table");
   };
 
   // Download Excel workbook with multiple sheets (one per school)
@@ -284,7 +277,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     
     // Create a sheet for each school
     uniqueSchools.forEach((school) => {
-      const schoolStudents = filteredStudents.filter(student => student.school === school);
+      const schoolStudents = sortedStudents.filter(student => student.school === school);
       
       // Prepare data with headers
       const sheetData = [

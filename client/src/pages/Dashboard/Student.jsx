@@ -16,9 +16,8 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes, locations } from "../../constants/Dashboard";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import { BASE_URL } from "../../../src/Service/helper";
+import { downloadPDF } from "../../../src/Service/utilityfunctions";
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
 import Pagination from "../../components/Dashboard/Pagination.jsx";
@@ -178,21 +177,16 @@ const Student = () => {
     setCurrentPage(1);
   };
   const handleDownloadTable = () => {
-    const doc = new jsPDF();
+    const columns = [
+      { label: "Name", key: "name" },
+      { label: "Class", key: "className" },
+      { label: "Phone", key: "phone" },
+      { label: "Location", key: "location" },
+      { label: "Mode", key: "mode" },
+      { label: "School", key: "school" }
+    ];
 
-    doc.autoTable({
-      head: [["Name", "Class", "Phone", "Location", "Mode", "School"]],
-      body: filteredStudents.map((student) => [
-        student.name,
-        student.className,
-        student.phone,
-        student.location,
-        student.mode,
-        student.school,
-      ]),
-    });
-
-    doc.save("students_table.pdf");
+    downloadPDF(filteredStudents, columns, "students_table");
   };
 
   const handleDelete = async (studentId) => {

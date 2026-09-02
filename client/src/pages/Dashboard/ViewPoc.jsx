@@ -3,14 +3,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Header from "../../components/Dashboard/Header";
 import { BASE_URL } from "../../../src/Service/helper";
+import { downloadCSV, downloadPDF } from "../../../src/Service/utilityfunctions";
 import { useSelector } from "react-redux";
 import {
   MdLocationPin,
   MdDownload,
 } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 const ViewPocList = () => {
   const [pocList, setPocList] = useState([]);
@@ -100,44 +99,38 @@ const ViewPocList = () => {
   };
 
   const handleDownloadTable = () => {
-    const doc = new jsPDF();
+    const columns = [
+      { label: "S.No.", key: "index" },
+      { label: "Name", key: "nameOfPoc" },
+      { label: "Contact No.", key: "contact" },
+      { label: "School", key: "school" },
+      { label: "Year", key: "year" }
+    ];
 
-    doc.autoTable({
-      head: [["S.No.","Name", "Contact No.", "School", "Year"]],
-      body: sortedPocList.map((poc,index) => [
-        index+1,
-        poc.nameOfPoc,
-        poc.contact,
-        poc.school,
-        poc.year,
-      ]),
-    });
+    const dataWithIndex = sortedPocList.map((poc, index) => ({
+      ...poc,
+      index: index + 1
+    }));
 
-    doc.save("poc_list.pdf");
+    downloadPDF(dataWithIndex, columns, "poc_list");
   };
 
   // Download CSV file
   const handleDownloadTableCsv = () => {
-    const csvContent = [
-      ["S.No.", "Name", "Contact No.", "School", "Year"],
-      ...sortedPocList.map((poc, index) => [
-        index + 1,
-        poc.nameOfPoc,
-        poc.contact,
-        poc.school,
-        poc.year
-      ])
-    ].map(row => row.join(",")).join("\n");
+    const columns = [
+      { label: "S.No.", key: "index" },
+      { label: "Name", key: "nameOfPoc" },
+      { label: "Contact No.", key: "contact" },
+      { label: "School", key: "school" },
+      { label: "Year", key: "year" }
+    ];
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "poc_list.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const dataWithIndex = sortedPocList.map((poc, index) => ({
+      ...poc,
+      index: index + 1
+    }));
+
+    downloadCSV(dataWithIndex, columns, "poc_list");
   };
 
   return (

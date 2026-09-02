@@ -3,9 +3,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { BASE_URL } from "../../Service/helper";
+import { downloadPDF } from "../../Service/utilityfunctions";
 import { Link } from "react-router-dom";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 const StudentsScoreTabular = () => {
   const searchParams = new URLSearchParams(useLocation().search);
@@ -60,34 +59,24 @@ const StudentsScoreTabular = () => {
   };
 
   const handleDownloadTable = () => {
-    const doc = new jsPDF();
-  
-    doc.setFontSize(14);
-    doc.text("Test Score Report", 14, 10);
-  
-    
-    doc.setFontSize(10);
-    doc.text(`Mentor: ${mentorName}       Class: ${className}       Subject: ${subject}       Test Date: ${formatDate(testDate)}        Total Marks: ${totalMarks}`, 14, 20);
-  
-    // Prepare table data
-    const tableColumn = ["S.No", "Name", "Score"];
-    const tableRows = testDetails.map((student, index) => [
-      index + 1, 
-      student.studentName,
-      student.scores[0].score !== -1 ? student.scores[0].score : "Absent",
-    ]);
-  
-    doc.autoTable({
-      startY: 30, 
-      head: [tableColumn],
-      body: tableRows,
-      theme: "striped",
-      headStyles: { fillColor: [44, 62, 80] },
-      styles: { fontSize: 10 },
+    const columns = [
+      { label: "S.No", key: "index" },
+      { label: "Name", key: "studentName" },
+      { label: "Score", key: "scoreValue" }
+    ];
+
+    const dataWithIndex = testDetails.map((student, index) => ({
+      ...student,
+      index: index + 1,
+      studentName: student.studentName,
+      scoreValue: student.scores[0]?.score !== -1 ? student.scores[0]?.score : "Absent"
+    }));
+
+    downloadPDF(dataWithIndex, columns, `Test_Score_Report_${testId}`, {
+      title: "Test Score Report",
+      titleFontSize: 14,
+      startY: 30
     });
-  
-    // Save the PDF
-    doc.save(`Test_Score_Report_${testId}.pdf`);
   };
 
   

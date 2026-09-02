@@ -3,7 +3,9 @@ import axios from "axios";
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import Header from "../../components/Dashboard/Header";
 import { BASE_URL } from "../../../src/Service/helper";
-import { jsPDF } from "jspdf";
+import { downloadPDF } from "../../../src/Service/utilityfunctions";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const EventPage = () => {
   const [events, setEvents] = useState([]);
