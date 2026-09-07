@@ -12,10 +12,18 @@ export const useDashboardData = () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch lightweight active student counts per class
+      // 1. Fetch lightweight active student counts per class with auth headers
+      const token = localStorage.getItem("token");
+      const authHeaders = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+
       let studentCounts = {};
       try {
-        const countRes = await axios.get(`${BASE_URL}/studentCounts`);
+        const countRes = await axios.get(
+          `${BASE_URL}/studentCounts`,
+          authHeaders
+        );
         studentCounts = countRes.data?.countsByClass || {};
       } catch (err) {
         console.error("Error fetching student counts:", err);
@@ -37,7 +45,8 @@ export const useDashboardData = () => {
           // Fetch attendance
           try {
             const attRes = await axios.get(
-              `${BASE_URL}/attendance?classId=${cls.id}`
+              `${BASE_URL}/attendance?classId=${cls.id}`,
+              authHeaders
             );
             if (attRes.data && typeof attRes.data.totalStudents === "number") {
               total = attRes.data.totalStudents;
@@ -53,7 +62,8 @@ export const useDashboardData = () => {
           // Fetch topic
           try {
             const topicRes = await axios.get(
-              `${BASE_URL}/topicCovered?classId=${cls.id}`
+              `${BASE_URL}/topicCovered?classId=${cls.id}`,
+              authHeaders
             );
             const topicList = topicRes.data?.topicsCovered || [];
             const validTopics = topicList.filter(
