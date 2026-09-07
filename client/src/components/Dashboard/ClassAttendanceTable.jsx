@@ -114,7 +114,7 @@ const ClassAttendanceTable = () => {
               Today's Class Overview
             </h2>
             <p className="text-xs md:text-sm text-slate-500 mt-0.5">
-              Live attendance and topic progress for all classes
+              Live attendance, subject, and topic progress for all classes
             </p>
           </div>
 
@@ -197,12 +197,12 @@ const ClassAttendanceTable = () => {
           <>
             {/* Desktop & Tablet Table View (hidden on small mobile screens) */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse table-fixed">
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
                     <th className="py-4 px-6 w-1/3">Class</th>
                     <th className="py-4 px-6 w-1/3">Present / Total</th>
-                    <th className="py-4 px-6 w-1/3">Topic Covered Today</th>
+                    <th className="py-4 px-6 w-1/3">Subject & Topic Covered Today</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -234,15 +234,66 @@ const ClassAttendanceTable = () => {
                         )}
                       </td>
 
-                      {/* 3. Topic Covered Today */}
-                      <td className="py-4 px-6 break-words max-w-xs md:max-w-md">
+                      {/* 3. Subject & Topic Covered Today */}
+                      <td className="py-4 px-6 break-words [overflow-wrap:anywhere] whitespace-normal">
                         {item.isTopicCovered ? (
-                          <span
-                            className="font-medium text-slate-800 text-sm md:text-base"
-                            title={item.topicCovered}
-                          >
-                            {item.topicCovered}
-                          </span>
+                          <div className="space-y-2">
+                            {item.topics && item.topics.length > 0 ? (
+                              item.topics.map((t, idx) => {
+                                const isLongTopic =
+                                  t.topic && t.topic.trim().length > 25;
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`min-w-0 ${
+                                      isLongTopic
+                                        ? "flex flex-col items-start gap-1"
+                                        : "flex flex-wrap items-center gap-1.5"
+                                    }`}
+                                  >
+                                    {t.subject && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                                        {t.subject}
+                                      </span>
+                                    )}
+                                    <span
+                                      className="font-medium text-slate-800 text-sm md:text-base leading-snug break-words [overflow-wrap:anywhere] whitespace-normal"
+                                      title={t.topic}
+                                    >
+                                      {t.topic}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              (() => {
+                                const isLongTopic =
+                                  item.topicCovered &&
+                                  item.topicCovered.trim().length > 25;
+                                return (
+                                  <div
+                                    className={`min-w-0 ${
+                                      isLongTopic
+                                        ? "flex flex-col items-start gap-1"
+                                        : "flex flex-wrap items-center gap-1.5"
+                                    }`}
+                                  >
+                                    {item.subjectCovered && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                                        {item.subjectCovered}
+                                      </span>
+                                    )}
+                                    <span
+                                      className="font-medium text-slate-800 text-sm md:text-base leading-snug break-words [overflow-wrap:anywhere] whitespace-normal"
+                                      title={item.topicCovered}
+                                    >
+                                      {item.topicCovered}
+                                    </span>
+                                  </div>
+                                );
+                              })()
+                            )}
+                          </div>
                         ) : (
                           <span className="italic text-slate-400 font-normal text-sm md:text-base">
                             Not Added
@@ -318,30 +369,58 @@ const ClassAttendanceTable = () => {
                     )}
                   </div>
 
-                  {/* Topic Covered Section (Adaptive: 1-line for short/empty text, 2-line block for longer descriptions) */}
-                  {item.isTopicCovered && item.topicCovered.trim().length > 20 ? (
-                    <div className="text-xs pt-1.5 border-t border-slate-200/50 space-y-1">
-                      <span className="text-slate-500 font-medium block">
-                        Topic Covered
-                      </span>
-                      <div className="break-words leading-relaxed text-slate-800 font-medium">
-                        {item.topicCovered}
-                      </div>
+                  {/* Subject & Topic Covered Section */}
+                  {item.isTopicCovered ? (
+                    <div className="text-xs pt-1.5 border-t border-slate-200/50 space-y-1.5">
+                      {item.topics && item.topics.length > 1 ? (
+                        <div className="space-y-1.5">
+                          <span className="text-slate-500 font-medium block">
+                            Topics Covered
+                          </span>
+                          {item.topics.map((t, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white/80 p-2 rounded-lg border border-slate-200/60 space-y-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                {t.subject && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    {t.subject}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="break-words leading-relaxed text-slate-800 font-medium">
+                                {t.topic}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500 font-medium">
+                              Topic Covered
+                            </span>
+                            {(item.topics?.[0]?.subject || item.subjectCovered) && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {item.topics?.[0]?.subject || item.subjectCovered}
+                              </span>
+                            )}
+                          </div>
+                          <div className="break-words leading-relaxed text-slate-800 font-medium">
+                            {item.topics?.[0]?.topic || item.topicCovered}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/50">
                       <span className="text-slate-500 font-medium">
                         Topic Covered
                       </span>
-                      {item.isTopicCovered ? (
-                        <span className="font-medium text-slate-800 text-right">
-                          {item.topicCovered}
-                        </span>
-                      ) : (
-                        <span className="italic text-slate-400 font-normal">
-                          Not Added
-                        </span>
-                      )}
+                      <span className="italic text-slate-400 font-normal">
+                        Not Added
+                      </span>
                     </div>
                   )}
                 </div>

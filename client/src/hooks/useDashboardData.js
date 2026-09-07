@@ -31,6 +31,8 @@ export const useDashboardData = () => {
           let percentage = 0;
           let isTopicCovered = false;
           let topicCovered = "";
+          let subjectCovered = "";
+          let topics = [];
 
           // Fetch attendance
           try {
@@ -53,10 +55,20 @@ export const useDashboardData = () => {
             const topicRes = await axios.get(
               `${BASE_URL}/topicCovered?classId=${cls.id}`
             );
-            const topic = topicRes.data?.topicsCovered?.[0]?.topic;
-            if (topic) {
-              topicCovered = topic;
+            const topicList = topicRes.data?.topicsCovered || [];
+            const validTopics = topicList.filter(
+              (t) => t && typeof t.topic === "string" && t.topic.trim().length > 0
+            );
+
+            if (validTopics.length > 0) {
               isTopicCovered = true;
+              topics = validTopics.map((t) => ({
+                topic: t.topic.trim(),
+                subject: t.subject ? t.subject.trim() : "",
+              }));
+              const latest = validTopics[validTopics.length - 1];
+              topicCovered = latest.topic.trim();
+              subjectCovered = latest.subject ? latest.subject.trim() : "";
             }
           } catch (topicErr) {
             isTopicCovered = false;
@@ -72,6 +84,8 @@ export const useDashboardData = () => {
             percentage,
             isTopicCovered,
             topicCovered,
+            subjectCovered,
+            topics,
           };
         })
       );
