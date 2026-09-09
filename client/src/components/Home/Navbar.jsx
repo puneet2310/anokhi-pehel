@@ -35,7 +35,7 @@ const Navbar = () => {
               } ${5 === navLinks.length - 1 ? "mr-0" : "mr-10"} ml-10`}
             onClick={() => setActive("dashboard")}
           >
-            <Link to={`/dashboard`}>Go To Dashboard</Link>
+            <Link to={`/dashboard`}> Dashboard</Link>
           </li>
         }
       </ul>
@@ -46,7 +46,7 @@ const Navbar = () => {
             onClick={() => setActive("dashboard")}
             className="font-poppins font-medium text-[14px] text-slate-900"
           >
-            Go To Dashboard
+           Dashboard
           </Link>
         )}
         <img
