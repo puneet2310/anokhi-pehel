@@ -75,14 +75,19 @@ router.post("/submitAttendance", async (req, res) => {
 });
 
 router.get("/attendance", async (req, res) => {
-  const { classId } = req.query;
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-  // console.log("vivek");
+  const { classId, date } = req.query;
+  const targetDate = date
+    ? (typeof date === "string" && date.includes("T") ? date.split("T")[0] : date)
+    : new Date().toISOString().split("T")[0];
+
   try {
-    // Find attendance records for the given classId and today's date
+    // Find attendance records for the given classId and target date
     const attendanceRecords = await Attendance.find({
       classId,
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
+      date: {
+        $gte: new Date(targetDate),
+        $lt: new Date(targetDate + "T23:59:59.999Z"),
+      },
     });
 
     if (attendanceRecords.length > 0) {
@@ -104,7 +109,7 @@ router.get("/attendance", async (req, res) => {
     } else {
       res.status(404).json({
         error:
-          "Attendance data not found for the given classId and today's date",
+          "Attendance data not found for the given classId and date",
       });
     }
   } catch (error) {
@@ -114,12 +119,18 @@ router.get("/attendance", async (req, res) => {
 });
 
 router.get("/attendanceTotal", async (req, res) => {
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  const { date } = req.query;
+  const targetDate = date
+    ? (typeof date === "string" && date.includes("T") ? date.split("T")[0] : date)
+    : new Date().toISOString().split("T")[0];
 
   try {
-    // Find attendance records for the given classId and today's date
+    // Find attendance records for the target date
     const attendanceRecords = await Attendance.find({
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
+      date: {
+        $gte: new Date(targetDate),
+        $lt: new Date(targetDate + "T23:59:59.999Z"),
+      },
     });
 
     if (attendanceRecords.length > 0) {
