@@ -57,14 +57,19 @@ router.get("/topics", async (req, res) => {
 });
 
 router.get("/topicCovered", async (req, res) => {
-  const { classId } = req.query;
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  const { classId, date } = req.query;
+  const targetDate = date
+    ? (typeof date === "string" && date.includes("T") ? date.split("T")[0] : date)
+    : new Date().toISOString().split("T")[0];
 
   try {
     // Assuming you have imported the Topic model correctly
     const topicsCovered = await Topic.find({
       classId,
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
+      date: {
+        $gte: new Date(targetDate),
+        $lt: new Date(targetDate + "T23:59:59.999Z"),
+      },
     });
 
     res.status(200).json({ topicsCovered });

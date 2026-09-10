@@ -1,14 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaCalendarCheck, FaSearch } from "react-icons/fa";
+import { FaPlus, FaCalendarCheck, FaSearch, FaCalendarAlt } from "react-icons/fa";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import { classes } from "../../constants/Dashboard";
 import ErrorMessageModel from "../Models/ErrorMessageModel";
 
 const ClassAttendanceTable = () => {
   const navigate = useNavigate();
-  const { classData, loading, error, refetch, metrics } = useDashboardData();
+  const mobileDateInputRef = useRef(null);
+  const desktopDateInputRef = useRef(null);
+  const {
+    classData,
+    loading,
+    error,
+    refetch,
+    metrics,
+    selectedDate,
+    setSelectedDate,
+    todayString,
+    formattedDDMMYYYYDate,
+  } = useDashboardData();
   const [showErrorModal, setShowErrorModal] = useState(false);
+
+  const handlePillClick = (ref) => {
+    try {
+      if (ref?.current?.showPicker) {
+        ref.current.showPicker();
+      } else {
+        ref?.current?.focus();
+      }
+    } catch (err) {
+      ref?.current?.focus();
+    }
+  };
 
   useEffect(() => {
     if (error) {
@@ -108,54 +132,121 @@ const ClassAttendanceTable = () => {
       {/* 2. Today's Class Overview Table Container */}
       <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
         {/* Table Header Controls / Title & Actions Toolbar */}
-        <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          <div>
-            <h2 className="text-lg md:text-xl font-bold text-slate-800">
-              Today's Class Overview
-            </h2>
-            <p className="text-xs md:text-sm text-slate-500 mt-0.5">
-              Live attendance, subject, and topic progress for all classes
-            </p>
+        <div className="p-3 sm:p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+          {/* Left Block: Title & Subtitle tightly coupled (mt-0.5) + Date on mobile */}
+          <div className="flex items-start justify-between gap-3 w-full md:w-auto">
+            <div>
+              <h2 className="text-sm sm:text-base md:text-xl font-bold text-slate-800">
+                Today's Class Overview
+              </h2>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5">
+                Live attendance, subject, and topic progress for all classes
+              </p>
+            </div>
+
+            {/* Date Selector on mobile view (right border, same line as title) */}
+            <div className="flex md:hidden items-center shrink-0">
+              <div
+                onClick={() => handlePillClick(mobileDateInputRef)}
+                className="relative inline-flex items-center bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl px-2.5 py-1 shadow-xs transition cursor-pointer shrink-0 select-none"
+                title="Select date to load attendance"
+              >
+                <FaCalendarAlt className="text-indigo-600 text-xs mr-1.5 pointer-events-none" />
+                <span className="text-[11px] font-semibold text-slate-500 mr-1 pointer-events-none">
+                  Date:
+                </span>
+                <span className="text-xs font-bold text-slate-700 tracking-wide pointer-events-none">
+                  {formattedDDMMYYYYDate}
+                </span>
+                <input
+                  ref={mobileDateInputRef}
+                  type="date"
+                  value={selectedDate}
+                  max={todayString}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    if (!newDate || newDate <= todayString) {
+                      setSelectedDate(newDate);
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                  style={{ border: "none", outline: "none" }}
+                  aria-label="Select date"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 w-full lg:w-auto lg:flex lg:items-center lg:gap-2">
-            {/* 1. Take Attendance (Primary Action) */}
-            <button
-              onClick={() => navigate("/takeAttendance")}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-lg shadow-sm transition active:scale-95 text-center"
-            >
-              <FaPlus className="text-[10px]" />
-              <span>Take Attendance</span>
-            </button>
+          {/* Right Block: Date Selector (on desktop) + Action Buttons */}
+          <div className="flex flex-col md:items-end gap-2.5 w-full md:w-auto">
+            {/* Date Selector on desktop view (right border) */}
+            <div className="hidden md:flex items-center shrink-0">
+              <div
+                onClick={() => handlePillClick(desktopDateInputRef)}
+                className="relative inline-flex items-center bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-xl px-3 py-1.5 shadow-xs transition cursor-pointer shrink-0 select-none"
+                title="Select date to load attendance"
+              >
+                <FaCalendarAlt className="text-indigo-600 text-sm mr-2 pointer-events-none" />
+                <span className="text-xs font-semibold text-slate-500 mr-1.5 pointer-events-none">
+                  Date:
+                </span>
+                <span className="text-sm font-bold text-slate-700 tracking-wide pointer-events-none">
+                  {formattedDDMMYYYYDate}
+                </span>
+                <input
+                  ref={desktopDateInputRef}
+                  type="date"
+                  value={selectedDate}
+                  max={todayString}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    if (!newDate || newDate <= todayString) {
+                      setSelectedDate(newDate);
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                  style={{ border: "none", outline: "none" }}
+                  aria-label="Select date"
+                />
+              </div>
+            </div>
 
-            {/* 2. Add Topic (Primary Action) */}
-            <button
-              onClick={() => navigate("/addTopic")}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-lg shadow-sm transition active:scale-95 text-center"
-            >
-              <FaPlus className="text-[10px]" />
-              <span>Add Topic</span>
-            </button>
+            {/* Action Buttons: 2x2 grid on mobile, horizontal row on desktop */}
+            <div className="grid grid-cols-2 gap-2 w-full md:w-auto md:flex md:items-center md:gap-2">
+              <button
+                onClick={() => navigate("/takeAttendance")}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-lg shadow-sm transition active:scale-95 text-center"
+              >
+                <FaPlus className="text-[10px]" />
+                <span>Take Attendance</span>
+              </button>
 
-            {/* 3. Check Attendance (Secondary View) */}
-            <button
-              onClick={() => navigate("/totalAttendance")}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition active:scale-95 border border-slate-200/70 text-center"
-              title="Check Monthly Attendance Records"
-            >
-              <FaCalendarCheck className="text-xs text-slate-500" />
-              <span>Check Attendance</span>
-            </button>
+              <button
+                onClick={() => navigate("/addTopic")}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-lg shadow-sm transition active:scale-95 text-center"
+              >
+                <FaPlus className="text-[10px]" />
+                <span>Add Topic</span>
+              </button>
 
-            {/* 4. View Topics (Secondary View) */}
-            <button
-              onClick={() => navigate("/findTopic")}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition active:scale-95 border border-slate-200/70 text-center"
-              title="Search Topics Covered"
-            >
-              <FaSearch className="text-xs text-slate-500" />
-              <span>View Topics</span>
-            </button>
+              <button
+                onClick={() => navigate("/totalAttendance")}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition active:scale-95 border border-slate-200/70 text-center"
+                title="Check Monthly Attendance Records"
+              >
+                <FaCalendarCheck className="text-xs text-slate-500" />
+                <span>Check Attendance</span>
+              </button>
+
+              <button
+                onClick={() => navigate("/findTopic")}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition active:scale-95 border border-slate-200/70 text-center"
+                title="Search Topics Covered"
+              >
+                <FaSearch className="text-xs text-slate-500" />
+                <span>View Topics</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -202,7 +293,9 @@ const ClassAttendanceTable = () => {
                   <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
                     <th className="py-4 px-6 w-1/3">Class</th>
                     <th className="py-4 px-6 w-1/3">Present / Total</th>
-                    <th className="py-4 px-6 w-1/3">Subject & Topic Covered Today</th>
+                    <th className="py-4 px-6 w-1/3">
+                      Subject & Topic Covered Today
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
