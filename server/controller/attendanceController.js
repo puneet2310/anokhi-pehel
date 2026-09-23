@@ -85,6 +85,98 @@ const lastFiveDaysAttendance = async(req, res) => {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
 
-module.exports = { monthlyAttendance, lastFiveDaysAttendance };
+const getAttendance = async (req, res) => {
+  const { classId, date } = req.query;
+  const targetDate = date
+    ? (typeof date === "string" && date.includes("T") ? date.split("T")[0] : date)
+    : new Date().toISOString().split("T")[0];
+
+  try {
+    // Find attendance records for the given classId and target date
+    const attendanceRecords = await Attendance.find({
+      classId,
+      date: {
+        $gte: new Date(targetDate),
+        $lt: new Date(targetDate + "T23:59:59.999Z"),
+      },
+    });
+
+    if (attendanceRecords.length > 0) {
+      // Calculate total students and total present students
+      let totalStudents = 0;
+      let totalPresentStudents = 0;
+
+      attendanceRecords.forEach((record) => {
+        totalStudents += record.attendance.length; // Increment total students by the attendance count
+        totalPresentStudents += record.attendance.filter(
+          (item) => item.status === "present"
+        ).length; // Count present students
+      });
+
+      res.status(200).json({
+        totalStudents,
+        totalPresentStudents,
+      });
+    } else {
+      res.status(404).json({
+        error:
+          "Attendance data not found for the given classId and date",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getAttendanceTotal = async (req, res) => {
+  const { date } = req.query;
+  const targetDate = date
+    ? (typeof date === "string" && date.includes("T") ? date.split("T")[0] : date)
+    : new Date().toISOString().split("T")[0];
+
+  try {
+    // Find attendance records for the target date
+    const attendanceRecords = await Attendance.find({
+      date: {
+        $gte: new Date(targetDate),
+        $lt: new Date(targetDate + "T23:59:59.999Z"),
+      },
+    });
+
+    if (attendanceRecords.length > 0) {
+      // Calculate total students and total present students
+      let totalStudents = 0;
+      let totalPresentStudents = 0;
+
+      attendanceRecords.forEach((record) => {
+        totalStudents += record.attendance.length; // Increment total students by the attendance count
+        totalPresentStudents += record.attendance.filter(
+          (item) => item.status === "present"
+        ).length; // Count present students
+      });
+
+      res.status(200).json({
+        totalStudents,
+        totalPresentStudents,
+      });
+    } else {
+      res.status(404).json({
+        error:
+          "Attendance data not found for the given classId and today's date",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  monthlyAttendance,
+  lastFiveDaysAttendance,
+  getAttendance,
+  getAttendanceTotal,
+};
