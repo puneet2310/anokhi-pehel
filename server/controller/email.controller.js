@@ -1,8 +1,55 @@
+const path = require("path");
 const csvParser = require("csv-parser");
 const { Readable } = require("stream");
 const axios = require("axios");
 const transporter = require("../config/mailer.js");
 const User = require("../models/User.js");
+
+const recruitmentAttachments = [
+  {
+    filename: "recruitment-header.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 222818.png"),
+    cid: "recruitmentHeader",
+  },
+  {
+    filename: "instagram.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 225151.png"),
+    cid: "instaLogo",
+  },
+  {
+    filename: "website.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230644.png"),
+    cid: "websiteLogo",
+  },
+  {
+    filename: "linkedin.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230544.png"),
+    cid: "linkedinLogo",
+  },
+];
+
+const selectionAttachments = [
+  {
+    filename: "selection-header.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 222758.png"),
+    cid: "selectionHeader",
+  },
+  {
+    filename: "instagram.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 225151.png"),
+    cid: "instaLogo",
+  },
+  {
+    filename: "website.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230644.png"),
+    cid: "websiteLogo",
+  },
+  {
+    filename: "linkedin.png",
+    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230544.png"),
+    cid: "linkedinLogo",
+  },
+];
 
 const sendMailsFromSheet = async (req, res) => {
   try {
@@ -140,7 +187,7 @@ const sendMailsFromSheet = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; background-color: #E6F0FF; padding: 40px 20px; line-height: 1.6; text-align: center;">
                   <div style="max-width: 600px; margin: 0 auto; background-color: #F2F2F2; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: left; color: #333;">
                     <div style="height: 120px; overflow: hidden;">
-                      <img src="https://i.ibb.co/fdzzs4MV/flower.webp" alt="Anokhi Pehel Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                      <img src="cid:recruitmentHeader" alt="Anokhi Pehel Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                     </div>
                     <div style="padding: 30px;">
                       <h1 style="color: #0c1445; font-size: 30px; margin-bottom: 25px; font-weight: 800; text-align: center;">
@@ -175,13 +222,13 @@ const sendMailsFromSheet = async (req, res) => {
                       </p>
                       <div style="text-align: center; margin-top: 35px;">
                         <a href="https://www.instagram.com/anokhipehel/#" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/k256hXxh/insta-logo.png" alt="Instagram" height="32" style="vertical-align: middle;">
+                          <img src="cid:instaLogo" alt="Instagram" height="32" style="vertical-align: middle;">
                         </a>
                         <a href="https://anokhi-pehel.azurewebsites.net/" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/ccmwhvQk/website-logo.png" alt="website-logo" alt="Website" height="32" style="vertical-align: middle;">
+                          <img src="cid:websiteLogo" alt="Website" height="32" style="vertical-align: middle;">
                         </a>
                         <a href="https://www.linkedin.com/company/anokhi-pehel" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/xK3jrQpz/linkedin-logo.png" alt="Website" height="32" style="vertical-align: middle;">
+                          <img src="cid:linkedinLogo" alt="LinkedIn" height="32" style="vertical-align: middle;">
                         </a>
                       </div>
                     </div>
@@ -195,6 +242,7 @@ const sendMailsFromSheet = async (req, res) => {
                 to: userEmail,
                 subject: "Invitation: Anokhi Pehel Recruitment Interview",
                 html: htmlBody,
+                attachments: recruitmentAttachments,
               };
 
               await transporter.sendMail(mailOptions);
@@ -222,7 +270,7 @@ const sendMailsFromSheet = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; background-color: #E6F0FF; padding: 40px 20px; line-height: 1.6; text-align: center;">
                   <div style="max-width: 600px; margin: 0 auto; background-color: #F2F2F2; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); text-align: left; color: #333;">
                     <div style="height: 120px; overflow: hidden;">
-                      <img src="https://i.ibb.co/LDh0Dvd8/congratulations.jpg" alt="Anokhi Pehel Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                      <img src="cid:selectionHeader" alt="Anokhi Pehel Logo" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                     </div>
                     <div style="padding: 30px;">
                       <h1 style="color: #0c1445; font-size: 30px; margin-bottom: 25px; font-weight: 800; text-align: center;">
@@ -254,13 +302,13 @@ const sendMailsFromSheet = async (req, res) => {
                       </p>
                       <div style="text-align: center; margin-top: 35px;">
                         <a href="https://www.instagram.com/anokhipehel/#" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/k256hXxh/insta-logo.png" alt="Instagram" height="32" style="vertical-align: middle;">
+                          <img src="cid:instaLogo" alt="Instagram" height="32" style="vertical-align: middle;">
                         </a>
                         <a href="https://anokhi-pehel.azurewebsites.net/" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/ccmwhvQk/website-logo.png" alt="website-logo" alt="Website" height="32" style="vertical-align: middle;">
+                          <img src="cid:websiteLogo" alt="Website" height="32" style="vertical-align: middle;">
                         </a>
                         <a href="https://www.linkedin.com/company/anokhi-pehel" target="_blank" style="margin: 0 12px;">
-                          <img src="https://i.ibb.co/xK3jrQpz/linkedin-logo.png" alt="Website" height="32" style="vertical-align: middle;">
+                          <img src="cid:linkedinLogo" alt="Website" height="32" style="vertical-align: middle;">
                         </a>
                       </div>
                     </div>
@@ -272,6 +320,7 @@ const sendMailsFromSheet = async (req, res) => {
                 to: userEmail,
                 subject: "Selection Confirmation - Anokhi Pehel",
                 html: htmlBody,
+                attachments: selectionAttachments,
               };
 
               await transporter.sendMail(mailOptions);
