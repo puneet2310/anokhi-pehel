@@ -8,22 +8,22 @@ const User = require("../models/User.js");
 const recruitmentAttachments = [
   {
     filename: "recruitment-header.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 222818.png"),
+    path: path.join(__dirname, "../images/recruitment-header.png"),
     cid: "recruitmentHeader",
   },
   {
     filename: "instagram.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 225151.png"),
+    path: path.join(__dirname, "../images/instagram-logo.png"),
     cid: "instaLogo",
   },
   {
     filename: "website.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230644.png"),
+    path: path.join(__dirname, "../images/website-logo.png"),
     cid: "websiteLogo",
   },
   {
     filename: "linkedin.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230544.png"),
+    path: path.join(__dirname, "../images/linkedin-logo.png"),
     cid: "linkedinLogo",
   },
 ];
@@ -31,22 +31,22 @@ const recruitmentAttachments = [
 const selectionAttachments = [
   {
     filename: "selection-header.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 222758.png"),
+    path: path.join(__dirname, "../images/selection-header.png"),
     cid: "selectionHeader",
   },
   {
     filename: "instagram.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 225151.png"),
+    path: path.join(__dirname, "../images/instagram-logo.png"),
     cid: "instaLogo",
   },
   {
     filename: "website.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230644.png"),
+    path: path.join(__dirname, "../images/website-logo.png"),
     cid: "websiteLogo",
   },
   {
     filename: "linkedin.png",
-    path: path.join(__dirname, "../images/Screenshot 2026-09-25 230544.png"),
+    path: path.join(__dirname, "../images/linkedin-logo.png"),
     cid: "linkedinLogo",
   },
 ];
